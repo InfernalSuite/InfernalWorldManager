@@ -12,4 +12,5 @@ repositories {
 
 dependencies {
     implementation("com.flowpowered:flow-nbt:2.0.0")
+    implementation("org.jetbrains:annotations:16.0.2")
 }

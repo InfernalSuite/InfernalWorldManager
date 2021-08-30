@@ -8,13 +8,10 @@ version = "1.0-SNAPSHOT"
 repositories {
     mavenCentral()
     maven("https://repo.glaremasters.me/repository/concuncan/")
+    maven("https://papermc.io/repo/repository/maven-public/")
 }
 
 dependencies {
     implementation("com.flowpowered:flow-nbt:2.0.0")
-    implementation("org.jetbrains:annotations:16.0.2")
-}
-
-tasks.getByName<Test>("test") {
-    useJUnitPlatform()
+    compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
 }
