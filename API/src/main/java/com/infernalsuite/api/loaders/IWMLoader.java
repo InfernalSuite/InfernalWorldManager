@@ -2,6 +2,7 @@ package com.infernalsuite.api.loaders;
 
 import com.infernalsuite.api.sources.DataSource;
 import com.infernalsuite.api.world.InfernalWorld;
+import com.infernalsuite.api.world.WorldDataWrapper;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.List;
@@ -29,13 +30,13 @@ public interface IWMLoader {
      */
     @NonNull String getName();
 
-    @NonNull InfernalWorld loadWorld(@NonNull String worldName, boolean readOnly);
+    @NonNull WorldDataWrapper loadWorld(@NonNull String worldName, boolean readOnly);
 
     boolean worldExists(@NonNull String worldName);
 
     List<String> listWorlds();
 
-    void saveWorld(@NonNull String worldName, @NonNull InfernalWorld world, boolean lock);
+    void saveWorld(@NonNull String worldName, @NonNull WorldDataWrapper world, boolean lock);
 
     void unlockWorld(@NonNull String worldName);
 
