@@ -5,10 +5,12 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Provides static access to the {@link InfernalWorldManager} API.
- *
  */
 public final class IWMProvider {
 
+    /**
+     * The IWM API instance.
+     */
     private static InfernalWorldManager instance = null;
 
     /**
@@ -26,11 +28,22 @@ public final class IWMProvider {
         return instance;
     }
 
+    /**
+     * Register an instance of the IWM API with the provider.
+     *
+     * @param instance the instance to register
+     * @apiNote Internal Use Only
+     */
     @ApiStatus.Internal
     static void register(InfernalWorldManager instance) {
         IWMProvider.instance = instance;
     }
 
+    /**
+     * Unregister the API instance from the provider.
+     *
+     * @apiNote Internal Use Only
+     */
     @ApiStatus.Internal
     static void unregister() {
         IWMProvider.instance = null;
@@ -41,6 +54,9 @@ public final class IWMProvider {
         throw new UnsupportedOperationException("This class cannot be instantiated");
     }
 
+    /**
+     * Exception to indicate an attempt was made to retrieve the API before it was loaded!
+     */
     private static final class NotLoadedException extends IllegalStateException {
         private static final String MESSAGE = """
                 The InfernalWorldManager API isn't loaded yet!
