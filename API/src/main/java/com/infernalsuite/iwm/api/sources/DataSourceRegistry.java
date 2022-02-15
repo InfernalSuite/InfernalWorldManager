@@ -4,6 +4,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Registry for available data sources within this IWM instance.
@@ -21,9 +22,9 @@ public interface DataSourceRegistry {
      * Gets a {@link DataSource} by its registered name.
      *
      * @param dataSourceName the name of the data source to retrieve
-     * @return the data source, or {@code null} if no registered data source matches the given name
+     * @return an {@link Optional} containing the data source, or {@link Optional#empty()} if no registered data source matches the given name
      */
-    @Nullable DataSource getDataSource(@NonNull String dataSourceName);
+    @NonNull Optional<DataSource> getDataSource(@NonNull String dataSourceName);
 
     /**
      * Unregister the given {@link DataSource} from the {@link DataSourceRegistry registry}

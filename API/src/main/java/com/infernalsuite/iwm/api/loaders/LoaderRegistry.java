@@ -2,9 +2,9 @@ package com.infernalsuite.iwm.api.loaders;
 
 import com.infernalsuite.iwm.api.sources.DataSource;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Registry for available loaders within this IWM instance.
@@ -23,9 +23,9 @@ public interface LoaderRegistry {
      * Gets an {@link IWMLoader} by its registered name.
      *
      * @param loaderName the name of the loader to retrieve
-     * @return the loader, or {@code null} if no registered loader matches the given name
+     * @return an {@link Optional} containing the loader, or {@link Optional#empty()} if no registered loader matches the given name
      */
-    @Nullable IWMLoader getLoader(@NonNull String loaderName);
+    @NonNull Optional<IWMLoader> getLoader(@NonNull String loaderName);
 
     /**
      * Unregister the given {@link IWMLoader loader} from the {@link LoaderRegistry registry}
@@ -45,9 +45,9 @@ public interface LoaderRegistry {
      * Retrieve an {@link IWMLoader} which can process the given {@link DataSource}.
      *
      * @param dataSource the data source
-     * @return an {@link IWMLoader} for the given source, or {@code null} if no loader is available that supports this data source
+     * @return an {@link Optional} containing the loader, or {@link Optional#empty()} if no loader is available that supports this data source
      */
-    @Nullable IWMLoader obtainLoader(@NonNull DataSource dataSource);
+    @NonNull Optional<IWMLoader> obtainLoader(@NonNull DataSource dataSource);
 
     /**
      * Gets a list of the names of the loaders registered with this registry.

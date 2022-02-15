@@ -1,9 +1,9 @@
 package com.infernalsuite.iwm.api.formats;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Registry for available formats within this IWM instance.
@@ -21,9 +21,9 @@ public interface FormatRegistry {
      * Gets a {@link Format} by its registered name.
      *
      * @param formatName the name of the format to retrieve
-     * @return the format, or {@code null} if no registered format matches the given name
+     * @return an {@link Optional} containing the format, or {@link Optional#empty()} if no registered format matches the given name
      */
-    @Nullable Format getFormat(@NonNull String formatName);
+    @NonNull Optional<Format> getFormat(@NonNull String formatName);
 
     /**
      * Unregister the given {@link Format} from the {@link FormatRegistry registry}

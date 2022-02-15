@@ -3,21 +3,23 @@ package com.infernalsuite.iwm.api.world;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.util.Optional;
+
 /**
  * Registry for all loaded worlds within IWM
  */
 public interface WorldRegistry {
 
     /**
-     * Retrieve a world from the world registry by name.
+     * Gets a {@link InfernalWorld} by its registered name
      *
      * @param worldName the name of the world
-     * @return an {@link InfernalWorld} object for the given world name, or {@code null} if the given name doesn't match
+     * @return an {@link Optional} containing the world, or {@link Optional#empty()} if the given name doesn't match a registered world
      */
-    @Nullable InfernalWorld getWorld(@NonNull String worldName);
+    @NonNull Optional<InfernalWorld> getWorld(@NonNull String worldName);
 
     /**
-     * Register a world with the world registry.
+     * Register an {@link InfernalWorld} with the world registry.
      *
      * @param world the world to register
      */
