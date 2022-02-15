@@ -1,4 +1,4 @@
-package com.infernalsuite.iwm.api.event.listeners;
+package com.infernalsuite.iwm.api.event;
 
 /**
  * Represents the order an event will be posted to a listener method, relative to other listeners to the same event.

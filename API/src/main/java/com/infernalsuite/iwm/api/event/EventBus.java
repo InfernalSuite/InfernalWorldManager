@@ -1,7 +1,5 @@
 package com.infernalsuite.iwm.api.event;
 
-import com.infernalsuite.iwm.api.event.listeners.IWMListener;
-import com.infernalsuite.iwm.api.event.listeners.Subscribe;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -45,17 +43,6 @@ public interface EventBus {
      * @return an {@link EventSubscription} representing this subscription
      */
     <T extends IWMEvent> @NonNull EventSubscription<T> subscribe(Object instance, @NonNull Class<T> eventClass, @NonNull Consumer<? super T> handler);
-
-    /**
-     * Registers all methods annotated with {@link Subscribe} in the given listener with the Event Bus.
-     *
-     * <p>Internally, this calls {@link #subscribe(Object, Class, Consumer) subscribe} for each method, using the given instance
-     * for the instance parameter, resolving the event class from the method signature and using the method itself as the consumer.</p>
-     *
-     * @param instance the instance of the environment IWM is running in (e.g. the plugin instance)
-     * @param listener the listener class
-     */
-    void register(Object instance, @NonNull IWMListener listener);
 
     /**
      * Gets a set of all registered subscriptions for a given event.
