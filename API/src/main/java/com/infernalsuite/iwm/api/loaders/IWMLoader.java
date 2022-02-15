@@ -1,7 +1,7 @@
 package com.infernalsuite.iwm.api.loaders;
 
 import com.infernalsuite.iwm.api.sources.DataSource;
-import com.infernalsuite.iwm.api.world.WorldDataWrapper;
+import com.infernalsuite.iwm.api.formats.SerializedDataWrapper;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.List;
@@ -29,13 +29,13 @@ public interface IWMLoader {
      */
     @NonNull String getName();
 
-    @NonNull WorldDataWrapper loadWorld(@NonNull String worldName, boolean readOnly);
+    @NonNull SerializedDataWrapper loadWorld(@NonNull String worldName, boolean readOnly);
 
     boolean worldExists(@NonNull String worldName);
 
     List<String> listWorlds();
 
-    void saveWorld(@NonNull String worldName, @NonNull WorldDataWrapper world, boolean lock);
+    void saveWorld(@NonNull String worldName, @NonNull SerializedDataWrapper world, boolean lock);
 
     void unlockWorld(@NonNull String worldName);
 
