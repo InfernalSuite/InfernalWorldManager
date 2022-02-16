@@ -10,19 +10,29 @@ import java.util.List;
 
 public class SeaweedLoader implements IWMLoader {
 
+    private final @NonNull String name;
+
+    private @NonNull SeaweedDS seaweedDataSource;
+
+    public SeaweedLoader(@NonNull String name, @NonNull SeaweedDS seaweedDataSource) {
+        this.name = name;
+        this.seaweedDataSource = seaweedDataSource;
+    }
+
     @Override
     public @NonNull SeaweedDS getDataSource() {
-        return null;
+        return this.seaweedDataSource;
     }
 
     @Override
     public void setDataSource(@NonNull DataSource dataSource) {
         if (!(dataSource instanceof SeaweedDS)) throw new IllegalArgumentException("Invalid data source type!");
+        this.seaweedDataSource = (SeaweedDS) dataSource;
     }
 
     @Override
     public @NonNull String getName() {
-        return null;
+        return this.name;
     }
 
     @Override
