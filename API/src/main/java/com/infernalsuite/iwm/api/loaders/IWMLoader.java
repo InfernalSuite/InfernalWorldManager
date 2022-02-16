@@ -4,6 +4,7 @@ import com.infernalsuite.iwm.api.sources.DataSource;
 import com.infernalsuite.iwm.api.formats.SerializedDataWrapper;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -67,7 +68,7 @@ public interface IWMLoader {
      *
      * @param worldName the world to unlock
      */
-    void unlockWorld(@NonNull String worldName);
+    void unlockWorld(@NonNull String worldName) throws IOException;
 
     /**
      * Checks whether a world is locked.
@@ -75,7 +76,7 @@ public interface IWMLoader {
      * @param worldName the name of the world to check
      * @return {@code true} if the world is locked
      */
-    boolean isWorldLocked(@NonNull String worldName);
+    boolean isWorldLocked(@NonNull String worldName) throws IOException;
 
     /**
      * Deletes a world.
