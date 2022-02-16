@@ -11,19 +11,29 @@ import java.util.List;
 
 public class MySQLLoader implements IWMLoader {
 
+    private final @NonNull String name;
+
+    private @NonNull MySQLDS mySqlDataSource;
+
+    public MySQLLoader(@NonNull String name, @NonNull MySQLDS mySqlDataSource) {
+        this.name = name;
+        this.mySqlDataSource = mySqlDataSource;
+    }
+
     @Override
     public @NonNull MySQLDS getDataSource() {
-        return null;
+        return this.mySqlDataSource;
     }
 
     @Override
     public void setDataSource(@NonNull DataSource dataSource) {
         if (!(dataSource instanceof MySQLDS)) throw new IllegalArgumentException("Invalid data source type!");
+        this.mySqlDataSource = (MySQLDS) dataSource;
     }
 
     @Override
     public @NonNull String getName() {
-        return null;
+        return this.name;
     }
 
     @Override
