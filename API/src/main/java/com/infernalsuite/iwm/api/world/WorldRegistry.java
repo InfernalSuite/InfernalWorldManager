@@ -39,9 +39,9 @@ public interface WorldRegistry {
     /**
      * Unregister an {@link InfernalWorld} using the world's registered name.
      *
-     * @param world the name of the world to unregister
+     * @param worldName the name of the world to unregister
      */
-    @NonNull CompletableFuture<Void> unregister(@NonNull String world);
+    @NonNull CompletableFuture<Void> unregister(@NonNull String worldName);
 
     /**
      * Gets a list of names of the worlds registered with this registry.
