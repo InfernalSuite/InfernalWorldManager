@@ -10,19 +10,29 @@ import java.util.List;
 
 public class CouchbaseLoader implements IWMLoader {
 
+    private final @NonNull String name;
+
+    private @NonNull CouchbaseDS couchbaseDataSource;
+
+    public CouchbaseLoader(@NonNull String name, @NonNull CouchbaseDS couchbaseDataSource) {
+        this.name = name;
+        this.couchbaseDataSource = couchbaseDataSource;
+    }
+
     @Override
     public @NonNull CouchbaseDS getDataSource() {
-        return null;
+        return this.couchbaseDataSource;
     }
 
     @Override
     public void setDataSource(@NonNull DataSource dataSource) {
         if (!(dataSource instanceof CouchbaseDS)) throw new IllegalArgumentException("Invalid data source type!");
+        this.couchbaseDataSource = (CouchbaseDS) dataSource;
     }
 
     @Override
     public @NonNull String getName() {
-        return null;
+        return this.name;
     }
 
     @Override
