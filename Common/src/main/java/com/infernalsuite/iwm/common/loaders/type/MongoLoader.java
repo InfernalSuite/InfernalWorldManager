@@ -10,19 +10,29 @@ import java.util.List;
 
 public class MongoLoader implements IWMLoader {
 
+    private final @NonNull String name;
+
+    private @NonNull MongoDS mongoDataSource;
+
+    public MongoLoader(@NonNull String name, @NonNull MongoDS mongoDataSource) {
+        this.name = name;
+        this.mongoDataSource = mongoDataSource;
+    }
+
     @Override
     public @NonNull MongoDS getDataSource() {
-        return null;
+        return this.mongoDataSource;
     }
 
     @Override
     public void setDataSource(@NonNull DataSource dataSource) {
         if (!(dataSource instanceof MongoDS)) throw new IllegalArgumentException("Invalid data source type!");
+        this.mongoDataSource = (MongoDS) dataSource;
     }
 
     @Override
     public @NonNull String getName() {
-        return null;
+        return this.name;
     }
 
     @Override
