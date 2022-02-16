@@ -29,18 +29,59 @@ public interface IWMLoader {
      */
     @NonNull String getName();
 
+    /**
+     * Loads the serialized data for the given world from this loader.
+     *
+     * @param worldName the name of the world to load
+     * @param readOnly whether the world is read only
+     * @return the serialized world data
+     */
     @NonNull SerializedDataWrapper loadWorld(@NonNull String worldName, boolean readOnly);
 
+    /**
+     * Checks if a world is present in this loader.
+     *
+     * @param worldName the world name to check
+     * @return {@code true} if the world is stored in this loader
+     */
     boolean worldExists(@NonNull String worldName);
 
-    List<String> listWorlds();
+    /**
+     * Gets a list of names of world stored in this loader.
+     *
+     * @return a list of names of stored worlds
+     */
+    @NonNull List<String> listWorlds();
 
+    /**
+     * Saves a world using this loader.
+     *
+     * @param worldName the name of the world to save
+     * @param world the serialized data for this world
+     * @param lock whether the world should be locked
+     */
     void saveWorld(@NonNull String worldName, @NonNull SerializedDataWrapper world, boolean lock);
 
+    /**
+     * Unlocks a world.
+     *
+     * @param worldName the world to unlock
+     */
     void unlockWorld(@NonNull String worldName);
 
+    /**
+     * Checks whether a world is locked.
+     *
+     * @param worldName the name of the world to check
+     * @return {@code true} if the world is locked
+     */
     boolean isWorldLocked(@NonNull String worldName);
 
+    /**
+     * Deletes a world.
+     *
+     * @param worldName the name of the world to delete
+     */
     void deleteWorld(@NonNull String worldName);
 
 }
