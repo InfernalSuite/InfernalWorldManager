@@ -59,7 +59,7 @@ public interface WorldRegistry {
      * @param properties the world properties which should be used for this world
      * @return an {@link Optional} containing the world, or {@link Optional#empty()} if no world was loaded
      */
-    @NonNull CompletableFuture<Optional<InfernalWorld>> loadWorld(IWMLoader loader, String worldName, boolean readOnly, WorldProperties properties);
+    @NonNull CompletableFuture<Optional<InfernalWorld>> loadWorld(@NonNull IWMLoader loader, @NonNull String worldName, boolean readOnly, @NonNull WorldProperties properties);
 
     /**
      * Creates an empty world.
@@ -70,7 +70,7 @@ public interface WorldRegistry {
      * @param properties the world properties for the world
      * @return an {@link Optional} containing the world, or {@link Optional#empty()} if no world was created
      */
-    @NonNull CompletableFuture<Optional<InfernalWorld>> createEmptyWorld(String worldName, IWMLoader loader, boolean readOnly, WorldProperties properties);
+    @NonNull CompletableFuture<Optional<InfernalWorld>> createEmptyWorld(@NonNull String worldName, @NonNull IWMLoader loader, boolean readOnly, @NonNull WorldProperties properties);
 
     /**
      * Migrates a world from one loader to another.
@@ -79,7 +79,7 @@ public interface WorldRegistry {
      * @param currentLoader the loader to migrate the world from
      * @param newLoader the loader to migrate the world to
      */
-    @NonNull CompletableFuture<Void> migrateWorld(String worldName, IWMLoader currentLoader, IWMLoader newLoader);
+    @NonNull CompletableFuture<Void> migrateWorld(@NonNull String worldName, @NonNull IWMLoader currentLoader, @NonNull IWMLoader newLoader);
 
     /**
      * Imports a world into IWM.
@@ -88,13 +88,13 @@ public interface WorldRegistry {
      * @param worldName the name of the world to import
      * @param loader the loader to use
      */
-    @NonNull CompletableFuture<Void> importWorld(File worldDir, String worldName, IWMLoader loader);
+    @NonNull CompletableFuture<Void> importWorld(@NonNull File worldDir, @NonNull String worldName, @NonNull IWMLoader loader);
 
     /**
      * Generates a {@link InfernalWorld world} (adds it to the server's world list).
      *
      * @param world the world to generate
      */
-    void generateWorld(InfernalWorld world);
+    void generateWorld(@NonNull InfernalWorld world);
 
 }
