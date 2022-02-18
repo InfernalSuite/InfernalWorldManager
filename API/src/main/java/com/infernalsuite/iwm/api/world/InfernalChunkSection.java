@@ -2,6 +2,7 @@ package com.infernalsuite.iwm.api.world;
 
 import com.infernalsuite.iwm.api.utils.NibbleArray;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jglrxavpok.hephaistos.nbt.NBTCompound;
 import org.jglrxavpok.hephaistos.nbt.NBTList;
 
@@ -11,32 +12,40 @@ import org.jglrxavpok.hephaistos.nbt.NBTList;
 public interface InfernalChunkSection {
 
     /**
-     * Gets the number of non-air blocks present in the chunk section.
+     * Gets the block palette of the chunk section.
      *
-     * @return a count of the number of non-air blocks in this chunk section
+     * @apiNote 1.13 - 1.17 Only ({@code null} for post 1.17)
+     *
+     * @return the block palette, contained inside a {@link NBTList}
      */
-    short getBlockCount();
+    @Nullable NBTList<NBTCompound> getPalette();
 
     /**
      * Gets all the states of the blocks of the chunk section.
+     *
+     * @apiNote 1.13 - 1.17 Only ({@code null} for post 1.17)
      *
      * @return a {@code long[]} with every block state
      */
     long[] getBlockStates();
 
     /**
-     * Gets the block palette of the chunk section.
+     * Gets the block states data for this chunk section, in NBT format.
      *
-     * @return the block palette, contained inside a {@link NBTList}
+     * @apiNote Post 1.17 Only ({@code null} for pre 1.17)
+     *
+     * @return the section's block states, contained inside a {@link NBTCompound}
      */
-    @NonNull NBTList<NBTCompound> getPalette();
+    @Nullable NBTCompound getBlockStatesTag();
 
     /**
-     * Gets the biome palette of the chunk section.
+     * Gets the biome data for this chunk section, in NBT format.
      *
-     * @return the biome palette, contained inside a {@link NBTList}
+     * @apiNote the section's biome data, contained inside a {@link NBTCompound}
+     *
+     * @return Post 1.17 Only ({@code null} for pre 1.17)
      */
-    @NonNull NBTList<NBTCompound> getBiomes();
+    @Nullable NBTCompound getBiomeTag();
 
     /**
      * Gets the block light data for this chunk section.
