@@ -1,5 +1,6 @@
 package com.infernalsuite.iwm.api.world;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jglrxavpok.hephaistos.nbt.NBTCompound;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public interface InfernalChunk {
      *
      * @return the world name
      */
-    String getWorldName();
+    @NonNull String getWorldName();
 
     /**
      * Gets the X co-ordinate of the chunk.
@@ -35,27 +36,50 @@ public interface InfernalChunk {
      *
      * @return a {@link InfernalChunkSection} array
      */
-    InfernalChunkSection[] getSections();
+    @NonNull InfernalChunkSection[] getSections();
+
+    /**
+     * Gets the Y-Section co-ordinate of the minimum chunk section in this column.
+     *
+     * @return the minimum y-section co-ordinate
+     */
+    int getMinSection();
+
+    /**
+     * Gets the Y-Section co-ordinate of the maximum chunk section in this column.
+     *
+     * @return the maximum y-section co-ordinate
+     */
+    int getMaxSection();
+
+    /**
+     * Gets all the biomes of the chunk.
+     *
+     * @apiNote Pre 1.17 Only ({@code null} for post 1.17)
+     *
+     * @return an {@code int[]} containing all the biomes of the chunk
+     */
+    int[] getBiomes();
 
     /**
      * Gets the height maps of the chunk.
      *
      * @return a {@link NBTCompound} containing all the height maps of the chunk
      */
-    NBTCompound getHeightMaps();
+    @NonNull NBTCompound getHeightMaps();
 
     /**
      * Gets all the tile entities of the chunk.
      *
      * @return a list of {@link NBTCompound}s containing all the tile entities of the chunk
      */
-    List<NBTCompound> getTileEntities();
+    @NonNull List<NBTCompound> getTileEntities();
 
     /**
      * Gets all entities of the chunk.
      *
      * @return a list of {@link NBTCompound}s containing all the entities of the cxhunk
      */
-    List<NBTCompound> getEntities();
+    @NonNull List<NBTCompound> getEntities();
 
 }
