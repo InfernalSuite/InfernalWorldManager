@@ -28,6 +28,8 @@ dependencies {
     paperDevBundle("1.18.1-R0.1-SNAPSHOT")
     compileOnly("io.papermc.paper:paper-api:1.18.1-R0.1-SNAPSHOT")
 
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.6.20-M1")
+
     implementation("org.checkerframework:checker-qual:3.21.2")
     implementation("co.aikar:locales:1.0-SNAPSHOT")
     implementation("io.github.jglrxavpok.hephaistos:common:2.4.1")
