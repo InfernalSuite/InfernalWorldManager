@@ -1,18 +1,17 @@
 package com.infernalsuite.iwm.nms;
 
 import com.infernalsuite.iwm.api.world.InfernalWorld;
-import org.bukkit.World;
 import org.jglrxavpok.hephaistos.nbt.NBTCompound;
 
 import java.io.IOException;
 
-public interface InfernalNMS {
+public interface InfernalNMS<T> {
 
     void setDefaultWorlds(InfernalWorld normalWorld, InfernalWorld netherWorld, InfernalWorld endWorld) throws IOException;
 
     void generateWorld(InfernalWorld world);
 
-    InfernalWorld getInfernalWorld(World world);
+    InfernalWorld getInfernalWorld(T world);
 
     byte getWorldVersion();
 
