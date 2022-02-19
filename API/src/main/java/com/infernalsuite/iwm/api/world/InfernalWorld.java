@@ -4,6 +4,7 @@ import com.infernalsuite.iwm.api.loaders.IWMLoader;
 import com.infernalsuite.iwm.api.world.properties.WorldPropertyMap;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jglrxavpok.hephaistos.nbt.NBTCompound;
+import org.jglrxavpok.hephaistos.nbt.mutable.MutableNBTCompound;
 
 import java.util.Collection;
 import java.util.Map;
@@ -46,9 +47,9 @@ public interface InfernalWorld {
     /**
      * Returns the extra data of the world.
      *
-     * @return a {@link NBTCompound} containing any extra data of the world
+     * @return a {@link MutableNBTCompound} containing any extra data of the world
      */
-    NBTCompound getExtraData();
+    MutableNBTCompound getExtraData();
 
     /**
      * Returns a {@link Collection} containing every world map, serialized in a {@link NBTCompound}.
@@ -77,5 +78,12 @@ public interface InfernalWorld {
      * @return {@code true} if the world is locked
      */
     boolean isLocked();
+
+    /**
+     * Gets the name of the format which this world is stored in.
+     *
+     * @return the format name
+     */
+    @NonNull String getFormatName();
 
 }
