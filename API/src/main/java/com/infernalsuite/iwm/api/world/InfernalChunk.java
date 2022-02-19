@@ -36,7 +36,7 @@ public interface InfernalChunk {
      *
      * @return a {@link InfernalChunkSection} array
      */
-    @NonNull InfernalChunkSection[] getSections();
+    InfernalChunkSection[] getSections();
 
     /**
      * Gets the Y-Section co-ordinate of the minimum chunk section in this column.
