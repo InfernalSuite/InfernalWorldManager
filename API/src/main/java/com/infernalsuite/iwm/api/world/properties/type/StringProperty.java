@@ -10,12 +10,12 @@ import java.util.function.Function;
 
 public class StringProperty extends WorldProperty<String> {
 
-    public StringProperty(String name, String initialValue) {
-        super(name, initialValue);
+    public StringProperty(String name, String defaultValue) {
+        super(name, defaultValue);
     }
 
-    public StringProperty(String name, String initialValue, Function<String, Boolean> validator) {
-        super(name, initialValue, validator);
+    public StringProperty(String name, String defaultValue, Function<String, Boolean> validator) {
+        super(name, defaultValue, validator);
     }
 
     @Override
@@ -27,7 +27,7 @@ public class StringProperty extends WorldProperty<String> {
     protected String readValue(NBT tag) {
         return NBTUtil.getAsStringTag(tag)
                 .map(NBTString::getValue)
-                .orElse(getInitialValue());
+                .orElse(getDefaultValue());
     }
 
 }

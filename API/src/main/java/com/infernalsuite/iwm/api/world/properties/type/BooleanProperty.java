@@ -10,12 +10,12 @@ import java.util.function.Function;
 
 public class BooleanProperty extends WorldProperty<Boolean> {
 
-    public BooleanProperty(String name, Boolean initialValue) {
-        super(name, initialValue);
+    public BooleanProperty(String name, Boolean defaultValue) {
+        super(name, defaultValue);
     }
 
-    public BooleanProperty(String name, Boolean initialValue, Function<Boolean, Boolean> validator) {
-        super(name, initialValue, validator);
+    public BooleanProperty(String name, Boolean defaultValue, Function<Boolean, Boolean> validator) {
+        super(name, defaultValue, validator);
     }
 
     @Override
@@ -27,7 +27,7 @@ public class BooleanProperty extends WorldProperty<Boolean> {
     protected Boolean readValue(NBT tag) {
         return NBTUtil.getAsByteTag(tag)
                 .map(NBTByte::asBoolean)
-                .orElse(getInitialValue());
+                .orElse(getDefaultValue());
     }
 
 }
