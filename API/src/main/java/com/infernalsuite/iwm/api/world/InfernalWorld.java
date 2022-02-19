@@ -1,7 +1,7 @@
 package com.infernalsuite.iwm.api.world;
 
 import com.infernalsuite.iwm.api.loaders.IWMLoader;
-import com.infernalsuite.iwm.api.world.properties.WorldProperties;
+import com.infernalsuite.iwm.api.world.properties.WorldPropertyMap;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jglrxavpok.hephaistos.nbt.NBTCompound;
 
@@ -58,11 +58,11 @@ public interface InfernalWorld {
     Collection<NBTCompound> getWorldMaps();
 
     /**
-     * Gets the {@link WorldProperties} contains all the properties of the world.
+     * Gets the {@link WorldPropertyMap} contains all the properties of the world.
      *
      * @return the world properties
      */
-    @NonNull WorldProperties getWorldProperties();
+    @NonNull WorldPropertyMap getWorldPropertyMap();
 
     /**
      * Gets whether the world is read only.

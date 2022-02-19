@@ -3,7 +3,7 @@ package com.infernalsuite.iwm.common.world;
 import com.infernalsuite.iwm.api.loaders.IWMLoader;
 import com.infernalsuite.iwm.api.world.InfernalWorld;
 import com.infernalsuite.iwm.api.world.WorldRegistry;
-import com.infernalsuite.iwm.api.world.properties.WorldProperties;
+import com.infernalsuite.iwm.api.world.properties.WorldPropertyMap;
 import com.infernalsuite.iwm.common.event.IWMEventDispatcher;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
@@ -66,12 +66,12 @@ public class IWMWorldRegistry implements WorldRegistry {
     }
 
     @Override
-    public @NonNull CompletableFuture<Optional<InfernalWorld>> loadWorld(@NotNull IWMLoader loader, @NotNull String worldName, boolean readOnly, @NotNull WorldProperties properties) {
+    public @NonNull CompletableFuture<Optional<InfernalWorld>> loadWorld(@NotNull IWMLoader loader, @NotNull String worldName, boolean readOnly, @NotNull WorldPropertyMap properties) {
         return null;
     }
 
     @Override
-    public @NonNull CompletableFuture<Optional<InfernalWorld>> createEmptyWorld(@NotNull String worldName, @NotNull IWMLoader loader, boolean readOnly, @NotNull WorldProperties properties) {
+    public @NonNull CompletableFuture<Optional<InfernalWorld>> createEmptyWorld(@NotNull String worldName, @NotNull IWMLoader loader, boolean readOnly, @NotNull WorldPropertyMap properties) {
         return null;
     }
 

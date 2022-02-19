@@ -4,7 +4,7 @@ import com.infernalsuite.iwm.api.event.IWMEvent;
 import com.infernalsuite.iwm.api.event.type.Cancellable;
 import com.infernalsuite.iwm.api.event.util.Param;
 import com.infernalsuite.iwm.api.loaders.IWMLoader;
-import com.infernalsuite.iwm.api.world.properties.WorldProperties;
+import com.infernalsuite.iwm.api.world.properties.WorldPropertyMap;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
@@ -46,6 +46,6 @@ public interface PreCreateEmptyWorldEvent extends IWMEvent, Cancellable {
      * @return the world properties
      */
     @Param(3)
-    @NonNull WorldProperties getWorldProperties();
+    @NonNull WorldPropertyMap getWorldProperties();
 
 }

@@ -3,7 +3,7 @@ package com.infernalsuite.iwm.common.nms;
 import com.infernalsuite.iwm.api.loaders.IWMLoader;
 import com.infernalsuite.iwm.api.world.InfernalChunk;
 import com.infernalsuite.iwm.api.world.InfernalWorld;
-import com.infernalsuite.iwm.api.world.properties.WorldProperties;
+import com.infernalsuite.iwm.api.world.properties.WorldPropertyMap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,7 +26,7 @@ public class CraftInfernalWorld implements InfernalWorld {
 
     private byte version;
 
-    private final WorldProperties worldProperties;
+    private final WorldPropertyMap worldPropertyMap;
 
     private final boolean readOnly;
     private final boolean locked;

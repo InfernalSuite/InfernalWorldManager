@@ -1,7 +1,7 @@
 package com.infernalsuite.iwm.api.world;
 
 import com.infernalsuite.iwm.api.loaders.IWMLoader;
-import com.infernalsuite.iwm.api.world.properties.WorldProperties;
+import com.infernalsuite.iwm.api.world.properties.WorldPropertyMap;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.File;
@@ -59,7 +59,7 @@ public interface WorldRegistry {
      * @param properties the world properties which should be used for this world
      * @return an {@link Optional} containing the world, or {@link Optional#empty()} if no world was loaded
      */
-    @NonNull CompletableFuture<Optional<InfernalWorld>> loadWorld(@NonNull IWMLoader loader, @NonNull String worldName, boolean readOnly, @NonNull WorldProperties properties);
+    @NonNull CompletableFuture<Optional<InfernalWorld>> loadWorld(@NonNull IWMLoader loader, @NonNull String worldName, boolean readOnly, @NonNull WorldPropertyMap properties);
 
     /**
      * Creates an empty world.
@@ -70,7 +70,7 @@ public interface WorldRegistry {
      * @param properties the world properties for the world
      * @return an {@link Optional} containing the world, or {@link Optional#empty()} if no world was created
      */
-    @NonNull CompletableFuture<Optional<InfernalWorld>> createEmptyWorld(@NonNull String worldName, @NonNull IWMLoader loader, boolean readOnly, @NonNull WorldProperties properties);
+    @NonNull CompletableFuture<Optional<InfernalWorld>> createEmptyWorld(@NonNull String worldName, @NonNull IWMLoader loader, boolean readOnly, @NonNull WorldPropertyMap properties);
 
     /**
      * Migrates a world from one loader to another.

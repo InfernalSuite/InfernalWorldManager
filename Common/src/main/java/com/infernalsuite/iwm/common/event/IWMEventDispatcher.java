@@ -16,7 +16,7 @@ import com.infernalsuite.iwm.api.sources.DataSource;
 import com.infernalsuite.iwm.api.sources.DataSourceRegistry;
 import com.infernalsuite.iwm.api.world.InfernalWorld;
 import com.infernalsuite.iwm.api.world.WorldRegistry;
-import com.infernalsuite.iwm.api.world.properties.WorldProperties;
+import com.infernalsuite.iwm.api.world.properties.WorldPropertyMap;
 import com.infernalsuite.iwm.common.event.gen.GeneratedEventClass;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -407,11 +407,11 @@ public final class IWMEventDispatcher implements EventDispatcher {
      * @param worldName the name of the world being created
      * @param loader the loader being used for the world
      * @param readOnly whether the world is read only
-     * @param worldProperties the world properties
+     * @param worldPropertyMap the world properties
      * @return {@code true} if the event was cancelled
      */
-    public boolean dispatchPreCreateEmptyWorld(String worldName, IWMLoader loader, boolean readOnly, WorldProperties worldProperties) {
-        return postCancellable(PreCreateEmptyWorldEvent.class, false, worldName, loader, readOnly, worldProperties);
+    public boolean dispatchPreCreateEmptyWorld(String worldName, IWMLoader loader, boolean readOnly, WorldPropertyMap worldPropertyMap) {
+        return postCancellable(PreCreateEmptyWorldEvent.class, false, worldName, loader, readOnly, worldPropertyMap);
     }
 
     /**
@@ -453,11 +453,11 @@ public final class IWMEventDispatcher implements EventDispatcher {
      * @param loader the loader being used to load the world
      * @param worldName the name of the world being loaded
      * @param readOnly whether the world is read only
-     * @param worldProperties the world properties
+     * @param worldPropertyMap the world properties
      * @return {@code true} if the event was cancelled
      */
-    public boolean dispatchPreLoadWorld(IWMLoader loader, String worldName, boolean readOnly, WorldProperties worldProperties) {
-        return postCancellable(PreLoadWorldEvent.class, false, loader, worldName, readOnly, worldProperties);
+    public boolean dispatchPreLoadWorld(IWMLoader loader, String worldName, boolean readOnly, WorldPropertyMap worldPropertyMap) {
+        return postCancellable(PreLoadWorldEvent.class, false, loader, worldName, readOnly, worldPropertyMap);
     }
 
     /**
