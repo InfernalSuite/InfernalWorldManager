@@ -7,9 +7,9 @@ import com.infernalsuite.iwm.api.world.InfernalWorld;
  */
 public interface SerializedDataWrapper {
 
-    byte[] getChunkByteArray(int x, int z);
+    Byte[] getChunkByteArray(int x, int z);
 
-    void putChunkByteArray(int x, int z, byte[] serializedChunk);
+    void putChunkByteArray(int x, int z, Byte[] serializedChunk);
 
     /**
      * Gets the name of the format of this serialized data.
