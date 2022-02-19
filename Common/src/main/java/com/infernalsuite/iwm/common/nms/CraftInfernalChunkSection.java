@@ -1,4 +1,4 @@
-package com.infernalsuite.iwm.nms;
+package com.infernalsuite.iwm.common.nms;
 
 import com.infernalsuite.iwm.api.utils.NibbleArray;
 import com.infernalsuite.iwm.api.world.InfernalChunkSection;

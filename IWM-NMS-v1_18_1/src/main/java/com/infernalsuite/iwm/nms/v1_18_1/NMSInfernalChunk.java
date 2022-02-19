@@ -3,7 +3,7 @@ package com.infernalsuite.iwm.nms.v1_18_1;
 import com.infernalsuite.iwm.api.utils.NibbleArray;
 import com.infernalsuite.iwm.api.world.InfernalChunk;
 import com.infernalsuite.iwm.api.world.InfernalChunkSection;
-import com.infernalsuite.iwm.nms.CraftInfernalChunkSection;
+import com.infernalsuite.iwm.common.nms.CraftInfernalChunkSection;
 import com.mojang.serialization.Codec;
 import lombok.AllArgsConstructor;
 import lombok.Data;
