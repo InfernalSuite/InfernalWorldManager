@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 public class SlimeFormatImpl implements SlimeFormat {
 
-    private static final byte[] SLIME_HEADER = new byte[]{-79,11};
+    public static final byte[] SLIME_HEADER = new byte[]{-79,11};
     private static final byte SLIME_VERSION = 9;
 
     @Override
