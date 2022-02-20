@@ -1,6 +1,8 @@
 package com.infernalsuite.iwm.common.formats.slime;
 
 import com.infernalsuite.iwm.api.formats.SerializedDataWrapper;
+import com.infernalsuite.iwm.api.loaders.IWMLoader;
+import com.infernalsuite.iwm.api.world.properties.WorldPropertyMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -13,6 +15,9 @@ public class SlimeSerializedDataWrapper implements SerializedDataWrapper {
     // Serialization Metadata (not written to file)
     private final String formatName;
     private final String worldName;
+    private final IWMLoader loader;
+    private final WorldPropertyMap worldPropertyMap;
+    private final boolean readOnly;
 
     // Format Info
     private int formatBytesLength;
