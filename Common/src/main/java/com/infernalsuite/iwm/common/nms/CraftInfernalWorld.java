@@ -63,7 +63,7 @@ public class CraftInfernalWorld implements InfernalWorld {
         return sortedChunks;
     }
 
-    private static long calcIndex(int cx, int cz) {
+    public static long calcIndex(int cx, int cz) {
         return ((long) cz) * Integer.MAX_VALUE + ((long) cx);
     }
 
