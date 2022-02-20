@@ -12,6 +12,7 @@
         <module>API</module>
         <module>Common</module>
         <module>IWM-NMS-v1_18_1</module>
+        <module>IWM-Classmodifier</module>
     </modules>
 
     <properties>
