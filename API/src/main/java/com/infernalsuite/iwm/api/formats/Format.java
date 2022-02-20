@@ -3,6 +3,8 @@ package com.infernalsuite.iwm.api.formats;
 import com.infernalsuite.iwm.api.world.InfernalWorld;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.io.IOException;
+
 /**
  * Represents a world format within IWM
  */
@@ -29,6 +31,6 @@ public interface Format {
      * @param serializedWorld the world to deserialize
      * @return the {@link InfernalWorld deserialized world}
      */
-    @NonNull InfernalWorld deserialize(@NonNull SerializedDataWrapper serializedWorld);
+    @NonNull InfernalWorld deserialize(@NonNull SerializedDataWrapper serializedWorld) throws IOException;
 
 }
