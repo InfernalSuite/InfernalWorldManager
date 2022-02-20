@@ -10,13 +10,15 @@ import lombok.Setter;
 @RequiredArgsConstructor
 public class SlimeSerializedDataWrapper implements SerializedDataWrapper {
 
+    // Serialization Metadata (not written to file)
     private final String formatName;
+    private final String worldName;
 
     // Format Info
     private int formatBytesLength;
     private byte[] formatBytes;
 
-    // Metadata
+    // Format Metadata
     private byte[] slimeHeader;
     private byte slimeVersion;
     private byte worldVersion;

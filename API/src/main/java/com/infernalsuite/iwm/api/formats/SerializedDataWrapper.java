@@ -17,4 +17,11 @@ public interface SerializedDataWrapper {
      */
     String getFormatName();
 
+    /**
+     * Gets the name of the world which this serialized data represents.
+     *
+     * @return the world name
+     */
+    String getWorldName();
+
 }
