@@ -39,6 +39,7 @@ dependencies {
     compileOnly("com.infernalsuite:IWM-Common:0.0.1-ALPHA")
     compileOnly("org.jetbrains:annotations:22.0.0")
     compileOnly("org.projectlombok:lombok:1.18.22")
+    annotationProcessor("org.projectlombok:lombok:1.18.22")
 }
 
 description = "IWM-NMS-v1_18_1"
