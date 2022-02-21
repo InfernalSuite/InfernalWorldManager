@@ -23,7 +23,7 @@ public class Converter {
         return dataLayer == null ? null : new NibbleArray(dataLayer.getData());
     }
 
-    Tag convertTag(NBT nbt) {
+    Tag convertToTag(NBT nbt) {
         try {
             switch (NBTLibTypes.getEnumRep(nbt.getID())) {
                 case TAG_BYTE -> { return ByteTag.valueOf(((NBTByte) nbt).getValue()); }
@@ -36,12 +36,12 @@ public class Converter {
                 case TAG_STRING -> { return StringTag.valueOf(((NBTString) nbt).getValue()); }
                 case TAG_LIST -> {
                     ListTag listTag = new ListTag();
-                    ((NBTList<?>) nbt).asListView().stream().map(Converter::convertTag).forEach(listTag::add);
+                    ((NBTList<?>) nbt).asListView().stream().map(Converter::convertToTag).forEach(listTag::add);
                     return listTag;
                 }
                 case TAG_COMPOUND -> {
                     CompoundTag compoundTag = new CompoundTag();
-                    ((NBTCompound) nbt).forEach((key, value) -> compoundTag.put(key, convertTag(value)));
+                    ((NBTCompound) nbt).forEach((key, value) -> compoundTag.put(key, convertToTag(value)));
                     return compoundTag;
                 }
                 case TAG_INT_ARRAY -> { return new IntArrayTag(((NBTIntArray) nbt).getValue().copyArray()); }
@@ -56,7 +56,7 @@ public class Converter {
 
     // The explicit cast here actually saves some heap allocation!
     @SuppressWarnings("RedundantCast")
-    NBT convertTag(Tag tag) {
+    NBT convertToNBT(Tag tag) {
         switch (tag.getId()) {
             case Tag.TAG_BYTE -> { return new NBTByte(((ByteTag) tag).getAsByte()); }
             case Tag.TAG_SHORT -> { return new NBTShort(((ShortTag) tag).getAsShort()); }
@@ -69,7 +69,7 @@ public class Converter {
             case Tag.TAG_LIST -> {
                 ListTag listTag = (ListTag) tag;
                 List<NBT> list = new ArrayList<>(listTag.size());
-                listTag.stream().map(Converter::convertTag).forEach(list::add);
+                listTag.stream().map(Converter::convertToNBT).forEach(list::add);
                 return new NBTList<>(NBTType.byIndex(listTag.getElementType()), list);
             }
             case Tag.TAG_COMPOUND -> {
@@ -77,7 +77,7 @@ public class Converter {
                 Map<String, NBT> compoundMap = new HashMap<>();
                 // We could get an NPE here if 'compoundTag.get(key)' returns null, but if it does, that's likely a far bigger issue...
                 //noinspection ConstantConditions
-                compoundTag.getAllKeys().forEach(key -> compoundMap.put(key, convertTag(compoundTag.get(key))));
+                compoundTag.getAllKeys().forEach(key -> compoundMap.put(key, convertToNBT(compoundTag.get(key))));
                 return new NBTCompound(compoundMap);
             }
             case Tag.TAG_INT_ARRAY -> { return new NBTIntArray(((IntArrayTag) tag).getAsIntArray()); }

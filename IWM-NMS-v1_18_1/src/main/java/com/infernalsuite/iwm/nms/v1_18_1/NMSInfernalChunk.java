@@ -80,8 +80,8 @@ public class NMSInfernalChunk implements InfernalChunk {
                     Tag blockStateData = ChunkSerializer.BLOCK_STATE_CODEC.encodeStart(NbtOps.INSTANCE, section.getStates()).getOrThrow(false, System.err::println);
                     Tag biomeData = codec.encodeStart(NbtOps.INSTANCE, section.getBiomes()).getOrThrow(false, System.err::println);
 
-                    NBTCompound blockStateTag = (NBTCompound) Converter.convertTag(blockStateData);
-                    NBTCompound biomeTag = (NBTCompound) Converter.convertTag(biomeData);
+                    NBTCompound blockStateTag = (NBTCompound) Converter.convertToNBT(blockStateData);
+                    NBTCompound biomeTag = (NBTCompound) Converter.convertToNBT(biomeData);
 
                     sections[sectionId] = new CraftInfernalChunkSection(null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
                 }
@@ -121,7 +121,7 @@ public class NMSInfernalChunk implements InfernalChunk {
 
         chunk.blockEntities.values().stream()
                 .map(BlockEntity::saveWithFullMetadata)
-                .forEach(e -> tileEntities.add((NBTCompound) Converter.convertTag(e)));
+                .forEach(e -> tileEntities.add((NBTCompound) Converter.convertToNBT(e)));
 
         return tileEntities;
     }
@@ -136,7 +136,7 @@ public class NMSInfernalChunk implements InfernalChunk {
             CompoundTag entityNbt = new CompoundTag();
             if (e.save(entityNbt)) {
                 this.chunk.setLightCorrect(true);
-                entities.add((NBTCompound) Converter.convertTag(entityNbt));
+                entities.add((NBTCompound) Converter.convertToNBT(entityNbt));
             }
         });
 
