@@ -95,7 +95,7 @@ public class FileLoader implements IWMLoader {
 
                         byte[] slimeHeader = new byte[2];
                         file.read(slimeHeader);
-                        if (!(slimeHeader == SlimeFormatImpl.SLIME_HEADER)) throw new IllegalStateException("Invalid Slime Header");
+                        if (!(Arrays.equals(slimeHeader, SlimeFormatImpl.SLIME_HEADER))) throw new IllegalStateException("Invalid Slime Header");
                         serializedDataWrapper.setSlimeHeader(slimeHeader);
 
                         serializedDataWrapper.setSlimeVersion(file.readByte());
