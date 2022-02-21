@@ -13,6 +13,7 @@
         <module>Common</module>
         <module>IWM-NMS-v1_18_1</module>
         <module>IWM-Classmodifier</module>
+        <module>ASWM-Migrater</module>
     </modules>
 
     <properties>
