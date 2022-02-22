@@ -10,6 +10,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>IWM-Common</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>loader-utils</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -67,6 +71,12 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.36</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.infernalsuite</groupId>
+            <artifactId>loader-utils</artifactId>
+            <version>0.0.1-ALPHA</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
