@@ -4,6 +4,8 @@ import com.infernalsuite.iwm.api.InfernalWorldManager;
 import com.infernalsuite.iwm.common.api.ApiRegistrationUtil;
 import com.infernalsuite.iwm.common.api.IWMApi;
 import com.infernalsuite.iwm.common.api.implementation.IwmWorldAdapter;
+import com.infernalsuite.iwm.common.config.IwmConfiguration;
+import com.infernalsuite.iwm.common.config.generic.adapter.ConfigurationAdapter;
 import com.infernalsuite.iwm.common.environment.logging.IwmLogger;
 import com.infernalsuite.iwm.common.event.AbstractEventBus;
 import com.infernalsuite.iwm.common.event.IWMEventDispatcher;
@@ -25,12 +27,16 @@ public abstract class AbstractIwmEnv implements IwmEnv {
     private IWMFormatRegistry formatRegistry;
     private IWMEventDispatcher eventDispatcher;
     private IwmWorldAdapter<?> iwmWorldAdapter;
+    private IwmConfiguration configuration;
 
     public final void load() {
 
     }
 
     public final void enable() {
+
+        getLogger().info("Loading configuration...");
+        this.configuration = new IwmConfiguration(this, provideConfigurationAdapter());
 
         // Set up the IWM API
         this.iwmApi = new IWMApi(this);
@@ -53,6 +59,7 @@ public abstract class AbstractIwmEnv implements IwmEnv {
     }
 
     public final void disable() {
+
         getLogger().info("Starting shutdown process...");
 
         getBootstrap().getScheduler().shutdownScheduler();
@@ -70,6 +77,7 @@ public abstract class AbstractIwmEnv implements IwmEnv {
     protected abstract AbstractEventBus<?> provideEventBus(IWMApi api);
     protected abstract void registerApiOnPlatform(InfernalWorldManager api);
     protected abstract <T> IwmWorldAdapter<T> provideWorldAdapter();
+    protected abstract ConfigurationAdapter provideConfigurationAdapter();
 
     @Override
     public IWMWorldRegistry getWorldRegistry() {
@@ -100,6 +108,11 @@ public abstract class AbstractIwmEnv implements IwmEnv {
     @Override
     public <T> IwmWorldAdapter<T> getWorldAdapter(Class<T> worldClass) {
         return (IwmWorldAdapter<T>) this.iwmWorldAdapter;
+    }
+
+    @Override
+    public IwmConfiguration getConfiguration() {
+        return this.configuration;
     }
 
     @Override

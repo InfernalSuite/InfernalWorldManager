@@ -2,6 +2,7 @@ package com.infernalsuite.iwm.common.environment;
 
 import com.infernalsuite.iwm.common.api.IWMApi;
 import com.infernalsuite.iwm.common.api.implementation.IwmWorldAdapter;
+import com.infernalsuite.iwm.common.config.IwmConfiguration;
 import com.infernalsuite.iwm.common.environment.bootstrap.IwmBootstrap;
 import com.infernalsuite.iwm.common.environment.logging.IwmLogger;
 import com.infernalsuite.iwm.common.event.IWMEventDispatcher;
@@ -25,6 +26,8 @@ public interface IwmEnv {
     IWMEventDispatcher getEventDispatcher();
 
     <T> IwmWorldAdapter<T> getWorldAdapter(Class<T> worldClass);
+
+    IwmConfiguration getConfiguration();
 
     IwmLogger getLogger();
 
