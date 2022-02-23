@@ -2,12 +2,15 @@ package com.infernalsuite.iwm.api;
 
 import com.infernalsuite.iwm.api.event.EventBus;
 import com.infernalsuite.iwm.api.event.EventDispatcher;
+import com.infernalsuite.iwm.api.formats.Format;
+import com.infernalsuite.iwm.api.formats.FormatRegistry;
 import com.infernalsuite.iwm.api.loaders.IWMLoader;
 import com.infernalsuite.iwm.api.loaders.LoaderRegistry;
 import com.infernalsuite.iwm.api.platform.Metadata;
 import com.infernalsuite.iwm.api.platform.Platform;
 import com.infernalsuite.iwm.api.platform.WorldAdapter;
 import com.infernalsuite.iwm.api.sources.DataSource;
+import com.infernalsuite.iwm.api.sources.DataSourceRegistry;
 import com.infernalsuite.iwm.api.world.InfernalWorld;
 import com.infernalsuite.iwm.api.world.WorldRegistry;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -47,6 +50,26 @@ public interface InfernalWorldManager {
      * @return the loader registry
      */
     @NonNull LoaderRegistry getLoaderRegistry();
+
+    /**
+     * Gets the {@link FormatRegistry}, responsible for managing {@link Format} instances.
+     *
+     * <p>This registry can be used to retrieve instances of {@link Format} by name, registering new
+     * formats with IWM, etc.</p>
+     *
+     * @return the format registry
+     */
+    @NonNull FormatRegistry getFormatRegistry();
+
+    /**
+     * Gets the {@link DataSourceRegistry}, responsible for managing {@link DataSource} instances.
+     *
+     * <p>This registry can be used to retrieve instances of {@link DataSource} by name, registering new
+     * data sources with IWM, etc.</p>
+     *
+     * @return the data source registry
+     */
+    @NonNull DataSourceRegistry getDataSourceRegistry();
 
 
     /**
