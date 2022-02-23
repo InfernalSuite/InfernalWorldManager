@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.time.Instant;
+
 /**
  * Provides information about the platform IWM is running on.
  */
@@ -27,5 +29,7 @@ public interface Platform {
 
         private final @NonNull @Getter String friendlyName;
     }
+
+    @NonNull Instant getStartTime();
 
 }
