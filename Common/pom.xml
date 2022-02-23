@@ -10,10 +10,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>IWM-Common</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>loader-utils</module>
-    </modules>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

@@ -11,6 +11,7 @@
     <modules>
         <module>API</module>
         <module>Common</module>
+        <module>loader-utils</module>
         <module>IWM-NMS-v1_18_1</module>
         <module>IWM-Classmodifier</module>
         <module>ASWM-Migrater</module>
