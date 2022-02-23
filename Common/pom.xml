@@ -79,6 +79,11 @@
             <version>0.0.1-ALPHA</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.spongepowered</groupId>
+            <artifactId>configurate-core</artifactId>
+            <version>3.7.2</version>
+        </dependency>
     </dependencies>
 
 </project>
