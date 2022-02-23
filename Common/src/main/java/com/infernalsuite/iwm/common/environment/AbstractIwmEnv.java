@@ -17,6 +17,8 @@ import com.infernalsuite.iwm.common.world.IWMWorldRegistry;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Month;
 
 public abstract class AbstractIwmEnv implements IwmEnv {
 
@@ -123,5 +125,13 @@ public abstract class AbstractIwmEnv implements IwmEnv {
     @Override
     public IWMApi getApi() {
         return this.iwmApi;
+    }
+
+    public static String getEnvName() {
+        LocalDate date = LocalDate.now();
+        if (date.getMonth() == Month.APRIL && date.getDayOfMonth() == 1) {
+            return "Some world management thing ¯\\_(ツ)_/¯";
+        }
+        return "InfernalWorldManager";
     }
 }
