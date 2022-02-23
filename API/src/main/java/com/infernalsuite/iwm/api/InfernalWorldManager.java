@@ -71,7 +71,6 @@ public interface InfernalWorldManager {
      */
     @NonNull DataSourceRegistry getDataSourceRegistry();
 
-
     /**
      * Gets the {@link EventBus}, used for subscribing to IWM events.
      *
