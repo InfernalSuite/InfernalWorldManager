@@ -11,6 +11,11 @@ public class IwmCouchbaseDS implements CouchbaseDS {
     }
 
     @Override
+    public boolean isEnabled() {
+        return false;
+    }
+
+    @Override
     public @NonNull String getHost() {
         return null;
     }

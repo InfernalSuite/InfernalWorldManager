@@ -9,4 +9,9 @@ public class IwmSeaweedDS implements SeaweedDS {
     public @NonNull String getName() {
         return null;
     }
+
+    @Override
+    public boolean isEnabled() {
+        return false;
+    }
 }

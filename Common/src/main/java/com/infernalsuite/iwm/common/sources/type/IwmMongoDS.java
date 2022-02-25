@@ -11,6 +11,11 @@ public class IwmMongoDS implements MongoDS {
     }
 
     @Override
+    public boolean isEnabled() {
+        return false;
+    }
+
+    @Override
     public @NonNull String getHostname() {
         return null;
     }

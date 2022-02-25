@@ -13,6 +13,8 @@ public class IwmFileDS implements FileDS {
 
     private final File worldDir;
 
+    private final boolean enabled;
+
     @Override
     public @NonNull String getName() {
         return name;
@@ -23,4 +25,8 @@ public class IwmFileDS implements FileDS {
         return worldDir;
     }
 
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
 }

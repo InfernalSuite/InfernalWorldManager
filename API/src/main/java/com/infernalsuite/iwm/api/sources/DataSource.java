@@ -14,4 +14,13 @@ public interface DataSource {
      */
     @NonNull String getName();
 
+    /**
+     * Gets whether this data source is enabled.
+     *
+     * @apiNote If {@code true}, an attempt will be made to create a loader for this data source on startup
+     *
+     * @return {@code true} if the data source is enabled
+     */
+    boolean isEnabled();
+
 }

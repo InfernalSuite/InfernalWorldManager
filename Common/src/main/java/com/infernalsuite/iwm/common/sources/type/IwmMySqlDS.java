@@ -11,6 +11,11 @@ public class IwmMySqlDS implements MySQLDS {
     }
 
     @Override
+    public boolean isEnabled() {
+        return false;
+    }
+
+    @Override
     public @NonNull String getSqlUrl() {
         return MySQLDS.super.getSqlUrl();
     }
