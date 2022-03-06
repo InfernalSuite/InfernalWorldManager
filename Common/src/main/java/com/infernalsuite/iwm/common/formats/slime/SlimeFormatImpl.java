@@ -228,7 +228,8 @@ public class SlimeFormatImpl implements SlimeFormat {
         }
     }
 
-    // Serialization Helpers
+    //region Serialization Helpers
+    //=========================================================================
 
     private static byte[] getBitSetAsBytes(BitSet set, int fixedSize) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -351,7 +352,11 @@ public class SlimeFormatImpl implements SlimeFormat {
         return outByteStream.toByteArray();
     }
 
-    // Deserialization Helpers
+    //=========================================================================
+    //endregion
+
+    //region Deserialization Helpers
+    //=========================================================================
 
     private static NBTCompound readCompoundTag(byte[] serializedCompound) throws IOException {
         if (serializedCompound.length == 0) return null;
@@ -529,5 +534,8 @@ public class SlimeFormatImpl implements SlimeFormat {
 
         return new ChunkSectionData(chunkSectionArray, 0, 16);
     }
+
+    //=========================================================================
+    //endregion
 
 }
