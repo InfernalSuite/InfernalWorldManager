@@ -228,6 +228,16 @@ public class SlimeFormatImpl implements SlimeFormat {
         }
     }
 
+
+    public @NonNull SlimeSerializedDataWrapper readDataWrapper(@NonNull Map<Long, InputStream> inputStreams) {
+//        DataInputStream dataStream = new DataInputStream(new BufferedInputStream(inputStream));
+        return null;
+    }
+
+    public @NonNull Map<Long, OutputStream> writeDataWrapper(@NonNull SlimeSerializedDataWrapper serializedDataWrapper) {
+        return null;
+    }
+
     //region Serialization Helpers
     //=========================================================================
 

@@ -24,6 +24,11 @@ public final class AswmMigrater {
             public @NonNull String getName() {
                 return "file";
             }
+
+            @Override
+            public boolean isEnabled() {
+                return true;
+            }
         };
 
         FileLoader loader = new FileLoader("file_loader", fileDS);

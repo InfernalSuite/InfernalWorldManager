@@ -4,6 +4,7 @@ import com.infernalsuite.iwm.api.formats.SerializedDataWrapper;
 import com.infernalsuite.iwm.api.loaders.IWMLoader;
 import com.infernalsuite.iwm.api.sources.DataSource;
 import com.infernalsuite.iwm.api.sources.type.FileDS;
+import com.infernalsuite.iwm.common.formats.IWMFormatRegistry;
 import com.infernalsuite.iwm.common.formats.slime.SlimeFormatImpl;
 import com.infernalsuite.iwm.common.formats.slime.SlimeSerializedDataWrapper;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.charset.StandardCharsets;
@@ -79,6 +81,9 @@ public class FileLoader implements IWMLoader {
                 int formatBytesLength = file.readInt();
                 byte[] formatBytes = new byte[formatBytesLength];
                 file.read(formatBytes);
+
+                String formatName = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(formatBytes)).toString();
+
 
                 switch (StandardCharsets.UTF_8.decode(ByteBuffer.wrap(formatBytes)).toString()) {
                     case "slime" -> {
