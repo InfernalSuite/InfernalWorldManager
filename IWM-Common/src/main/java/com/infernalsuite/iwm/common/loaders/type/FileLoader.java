@@ -89,7 +89,6 @@ public class FileLoader implements IWMLoader {
                     case "slime" -> {
                         SlimeSerializedDataWrapper serializedDataWrapper = new SlimeSerializedDataWrapper(
                                 worldName,
-                                this,
                                 readOnly
                         );
 

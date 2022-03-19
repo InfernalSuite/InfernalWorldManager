@@ -18,7 +18,7 @@ public class SlimeSerializedDataWrapper implements SerializedDataWrapper {
     // Serialization Metadata (not written to file)
     private final String formatName = FORMAT_NAME;
     private final String worldName;
-    private final IWMLoader loader;
+    private @MonotonicNonNull IWMLoader loader;
     private final boolean readOnly;
 
     // Format Info

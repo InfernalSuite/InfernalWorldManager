@@ -44,7 +44,6 @@ public class SlimeFormatImpl implements SlimeFormat {
 
         SlimeSerializedDataWrapper serializedDataWrapper = new SlimeSerializedDataWrapper(
                 world.getName(),
-                world.getLoader(),
                 world.isReadOnly()
         );
 
