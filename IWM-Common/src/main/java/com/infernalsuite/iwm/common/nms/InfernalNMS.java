@@ -7,6 +7,8 @@ import java.io.IOException;
 
 public interface InfernalNMS<T> {
 
+    Object injectDefaultWorlds();
+
     void setDefaultWorlds(InfernalWorld normalWorld, InfernalWorld netherWorld, InfernalWorld endWorld) throws IOException;
 
     void generateWorld(InfernalWorld world);
@@ -14,7 +16,5 @@ public interface InfernalNMS<T> {
     InfernalWorld getInfernalWorld(T world);
 
     byte getWorldVersion();
-
-    default NBTCompound convertChunk(NBTCompound chunkTag) { return chunkTag; }
 
 }

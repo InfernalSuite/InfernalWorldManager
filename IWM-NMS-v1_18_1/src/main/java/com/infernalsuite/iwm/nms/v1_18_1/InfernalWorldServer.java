@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.infernalsuite.iwm.api.formats.Format;
 import com.infernalsuite.iwm.api.formats.FormatRegistry;
 import com.infernalsuite.iwm.api.formats.SerializedDataWrapper;
+import com.infernalsuite.iwm.api.utils.NibbleArray;
 import com.infernalsuite.iwm.api.world.InfernalChunk;
 import com.infernalsuite.iwm.api.world.InfernalChunkSection;
 import com.infernalsuite.iwm.api.world.properties.WorldPropertyMap;
@@ -62,7 +63,6 @@ import java.util.stream.Collectors;
 public class InfernalWorldServer extends ServerLevel {
 
     private static final ExecutorService WORLD_SAVER_SERVICE = Executors.newFixedThreadPool(4, new ThreadFactoryBuilder().setNameFormat("IWM Pool Thread #%1$d").build());
-    private static final TicketType<Unit> IWM_TICKET = TicketType.create("iwm-chunk", (a, b) -> 0);
 
     private final Object saveLock = new Object();
 
@@ -202,7 +202,7 @@ public class InfernalWorldServer extends ServerLevel {
         if (v1181InfernalNMS.isPaperMC) {
             blockNibbles = ca.spottedleaf.starlight.common.light.StarLightEngine.getFilledEmptyLight(this);
             skyNibbles = ca.spottedleaf.starlight.common.light.StarLightEngine.getFilledEmptyLight(this);
-            MinecraftServer.getServer().scheduleOnMain(() -> getLightEngine().retainData(pos, true));
+            getServer().scheduleOnMain(() -> getLightEngine().retainData(pos, true));
         }
 
         Registry<Biome> biomeRegistry = this.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);

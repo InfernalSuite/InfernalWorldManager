@@ -68,23 +68,23 @@ public class NMSInfernalChunk implements InfernalChunk {
         for (int sectionId = 0; sectionId < chunk.getSections().length; sectionId++) {
             LevelChunkSection section = chunk.getSections()[sectionId];
 
-            if (section != null) {
-                section.recalcBlockCounts();
+            section.recalcBlockCounts();
 
-                if (!section.hasOnlyAir()) {
-                    NibbleArray blockLightArray = Converter.convertArray(lightEngine.getLayerListener(LightLayer.BLOCK)
-                            .getDataLayerData(SectionPos.of(chunk.getPos(), sectionId)));
-                    NibbleArray skyLightArray = Converter.convertArray(lightEngine.getLayerListener(LightLayer.SKY)
-                            .getDataLayerData(SectionPos.of(chunk.getPos(), sectionId)));
+            if (!section.hasOnlyAir()) {
+                NibbleArray blockLightArray = Converter.convertArray(lightEngine.getLayerListener(LightLayer.BLOCK)
+                        .getDataLayerData(SectionPos.of(chunk.getPos(), sectionId)));
 
-                    Tag blockStateData = ChunkSerializer.BLOCK_STATE_CODEC.encodeStart(NbtOps.INSTANCE, section.getStates()).getOrThrow(false, System.err::println);
-                    Tag biomeData = codec.encodeStart(NbtOps.INSTANCE, section.getBiomes()).getOrThrow(false, System.err::println);
+                NibbleArray skyLightArray = Converter.convertArray(lightEngine.getLayerListener(LightLayer.SKY)
+                        .getDataLayerData(SectionPos.of(chunk.getPos(), sectionId)));
 
-                    NBTCompound blockStateTag = (NBTCompound) Converter.convertToNBT(blockStateData);
-                    NBTCompound biomeTag = (NBTCompound) Converter.convertToNBT(biomeData);
+                Tag blockStateData = ChunkSerializer.BLOCK_STATE_CODEC.encodeStart(NbtOps.INSTANCE, section.getStates()).getOrThrow(false, System.err::println);
+                Tag biomeData = codec.encodeStart(NbtOps.INSTANCE, section.getBiomes()).getOrThrow(false, System.err::println);
 
-                    sections[sectionId] = new CraftInfernalChunkSection(null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
-                }
+                NBTCompound blockStateTag = (NBTCompound) Converter.convertToNBT(blockStateData);
+                NBTCompound biomeTag = (NBTCompound) Converter.convertToNBT(biomeData);
+
+                sections[sectionId] = new CraftInfernalChunkSection(null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
+
             }
         }
 
@@ -103,7 +103,7 @@ public class NMSInfernalChunk implements InfernalChunk {
 
     @Override
     public int[] getBiomes() {
-        return new int[0];
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -135,7 +135,6 @@ public class NMSInfernalChunk implements InfernalChunk {
         entityManager.getEntities(this.chunk.getPos()).forEach(e -> {
             CompoundTag entityNbt = new CompoundTag();
             if (e.save(entityNbt)) {
-                this.chunk.setLightCorrect(true);
                 entities.add((NBTCompound) Converter.convertToNBT(entityNbt));
             }
         });

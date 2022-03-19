@@ -5,8 +5,6 @@ import com.infernalsuite.iwm.clsm.ClassModifier;
 import com.mojang.datafixers.util.Either;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ImposterProtoChunk;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -45,35 +43,12 @@ public class CraftCLSMBridge implements CLSMBridge {
     }
 
     @Override
-    public Object[] getDefaultWorlds() {
-        InfernalWorldServer defaultWorld = nmsInstance.getDefaultWorld();
-        InfernalWorldServer netherworld = nmsInstance.getDefaultNetherWorld();
-        InfernalWorldServer endWorld = nmsInstance.getDefaultEndWorld();
-
-        if (defaultWorld != null || netherworld != null || endWorld != null) {
-            return new InfernalWorldServer[]{defaultWorld, netherworld, endWorld};
-        }
-
-        return null;
-    }
-
-    @Override
     public boolean isCustomWorld(Object world) {
         return world instanceof InfernalWorldServer;
     }
 
     @Override
-    public boolean skipWorldAdd(Object world) {
-        if (!isCustomWorld(world) || nmsInstance.isLoadingDefaultWorlds()) return false;
-        InfernalWorldServer worldServer = (InfernalWorldServer) world;
-        return !worldServer.isReady();
-    }
-
-    @Override
-    public Object getDefaultGamemode() {
-        if (nmsInstance.isLoadingDefaultWorlds()) {
-            return ((DedicatedServer) MinecraftServer.getServer()).getProperties().gamemode;
-        }
-        return null;
+    public Object injectCustomWorlds() {
+        return nmsInstance.injectDefaultWorlds();
     }
 }

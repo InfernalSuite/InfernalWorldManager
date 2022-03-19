@@ -58,7 +58,7 @@ public class CraftInfernalWorld implements InfernalWorld {
             sortedChunks = new ArrayList<>(chunks.values());
         }
         sortedChunks.sort(Comparator.comparingLong(chunk -> calcIndex(chunk.getX(), chunk.getZ())));
-        sortedChunks.removeIf(chunk -> chunk == null || Arrays.stream(chunk.getSections()).allMatch(Objects::isNull));
+        sortedChunks.removeIf(Objects::isNull);
 
         return sortedChunks;
     }

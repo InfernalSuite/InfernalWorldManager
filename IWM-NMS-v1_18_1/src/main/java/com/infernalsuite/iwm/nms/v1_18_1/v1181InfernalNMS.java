@@ -13,45 +13,39 @@ import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelVersion;
 import net.minecraft.world.level.storage.PrimaryLevelData;
+import net.minecraft.world.level.storage.WorldData;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_18_R1.CraftWorld;
-import org.bukkit.event.world.WorldInitEvent;
-import org.bukkit.event.world.WorldLoadEvent;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jglrxavpok.hephaistos.nbt.NBTCompound;
-import org.jglrxavpok.hephaistos.nbt.mutable.MutableNBTCompound;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 public class v1181InfernalNMS implements InfernalNMS<World> {
@@ -85,7 +79,7 @@ public class v1181InfernalNMS implements InfernalNMS<World> {
     private final byte worldVersion = 0x08;
 
     @Getter
-    private boolean loadingDefaultWorlds = true;
+    private boolean injectFakeDimensions = false;
 
     private final FormatRegistry formatRegistry;
 
@@ -105,29 +99,130 @@ public class v1181InfernalNMS implements InfernalNMS<World> {
     }
 
     @Override
-    public void setDefaultWorlds(InfernalWorld normalWorld, InfernalWorld netherWorld, InfernalWorld endWorld) throws IOException {
-        if (normalWorld != null) defaultWorld = createDefaultWorld(formatRegistry, normalWorld, LevelStem.OVERWORLD, ServerLevel.OVERWORLD);
-        if (netherWorld != null) defaultNetherWorld = createDefaultWorld(formatRegistry, netherWorld, LevelStem.NETHER, ServerLevel.NETHER);
-        if (endWorld != null) defaultEndWorld = createDefaultWorld(formatRegistry, endWorld, LevelStem.END, ServerLevel.END);
+    public Object injectDefaultWorlds() {
+        if (!injectFakeDimensions) return null;
 
-        loadingDefaultWorlds = false;
+        System.out.println("Injecting: " + defaultEndWorld + " " + defaultNetherWorld + " " + defaultEndWorld);
+
+        MinecraftServer server = MinecraftServer.getServer();
+        server.server.scoreboardManager = new org.bukkit.craftbukkit.v1_18_R1.scoreboard.CraftScoreboardManager(server, server.getScoreboard());
+
+        if (defaultWorld != null) registerWorld(defaultWorld);
+        if (defaultNetherWorld != null) registerWorld(defaultNetherWorld);
+        if (defaultEndWorld != null) registerWorld(defaultEndWorld);
+
+        injectFakeDimensions = false;
+        return new MappedRegistry<>(Registry.ACTIVITY_REGISTRY, Lifecycle.stable());
     }
 
-    private InfernalWorldServer createDefaultWorld(FormatRegistry formatRegistry, InfernalWorld world, ResourceKey<LevelStem> dimensionKey, ResourceKey<Level> worldKey) {
-        PrimaryLevelData worldDataServer = createWorldData(world);
+    @Override
+    public void setDefaultWorlds(InfernalWorld normalWorld, InfernalWorld netherWorld, InfernalWorld endWorld) {
+        try {
+            MinecraftServer server = MinecraftServer.getServer();
 
-        MappedRegistry<LevelStem> registryMaterials = worldDataServer.worldGenSettings().dimensions();
-        LevelStem worldDimension = registryMaterials.get(dimensionKey);
-        DimensionType dimensionManager = worldDimension.type();
+            LevelSettings worldSettings;
+            WorldGenSettings generatorSettings;
+
+            DedicatedServerProperties dedicatedServerProperties = ((DedicatedServer) server).getProperties();
+
+            worldSettings = new LevelSettings(dedicatedServerProperties.levelName, dedicatedServerProperties.gamemode,
+                    dedicatedServerProperties.hardcore, dedicatedServerProperties.difficulty, false, new GameRules(),
+                    server.datapackconfiguration);
+            generatorSettings = dedicatedServerProperties.getWorldGenSettings(server.registryAccess());
+
+            WorldData data = new PrimaryLevelData(worldSettings, generatorSettings, Lifecycle.stable());
+
+            var field = MinecraftServer.class.getDeclaredField("q");
+            field.setAccessible(true);
+            field.set(server, data);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        if (normalWorld != null) {
+            normalWorld.getWorldPropertyMap().setValue(WorldProperties.ENVIRONMENT, World.Environment.NORMAL.toString().toLowerCase());
+            defaultWorld = createCustomWorld(normalWorld, Level.OVERWORLD);
+            injectFakeDimensions = true;
+        }
+
+        if (netherWorld != null) {
+            netherWorld.getWorldPropertyMap().setValue(WorldProperties.ENVIRONMENT, World.Environment.NETHER.toString().toLowerCase());
+            defaultNetherWorld = createCustomWorld(netherWorld, Level.NETHER);
+            injectFakeDimensions = true;
+        }
+
+        if (endWorld != null) {
+            endWorld.getWorldPropertyMap().setValue(WorldProperties.ENVIRONMENT, World.Environment.THE_END.toString().toLowerCase());
+            defaultEndWorld = createCustomWorld(endWorld, Level.END);
+            injectFakeDimensions = true;
+        }
+    }
+
+    private InfernalWorldServer createCustomWorld(InfernalWorld world, @Nullable ResourceKey<Level> dimensionOverride) {
+        String worldName = world.getName();
+
+        PrimaryLevelData worldDataServer = createWorldData(world);
+        World.Environment environment = getEnvironment(world);
+        ResourceKey<LevelStem> dimension = switch (environment) {
+            case NORMAL -> LevelStem.OVERWORLD;
+            case NETHER -> LevelStem.NETHER;
+            case THE_END -> LevelStem.END;
+            default -> throw new IllegalArgumentException("Unknown dimension supplied");
+        };
+
+        MappedRegistry<LevelStem> materials = worldDataServer.worldGenSettings().dimensions();
+        LevelStem worldDimension = materials.get(dimension);
+
+        DimensionType predefinedType = worldDimension.type();
+
+        OptionalLong fixedTime = switch (environment) {
+            case NORMAL -> OptionalLong.empty();
+            case NETHER -> OptionalLong.of(18000L);
+            case THE_END -> OptionalLong.of(6000L);
+            case CUSTOM -> throw new UnsupportedOperationException();
+        };
+
+        double light = switch (environment) {
+            case NORMAL, THE_END -> 0;
+            case NETHER -> 0.1;
+            case CUSTOM -> throw new UnsupportedOperationException();
+        };
+
+        ResourceLocation infiniburn = switch (environment) {
+            case NORMAL -> BlockTags.INFINIBURN_OVERWORLD.getName();
+            case NETHER -> BlockTags.INFINIBURN_NETHER.getName();
+            case THE_END -> BlockTags.INFINIBURN_END.getName();
+            case CUSTOM -> throw new UnsupportedOperationException();
+        };
+
+        DimensionType type = DimensionType.create(fixedTime, predefinedType.hasSkyLight(), predefinedType.hasCeiling(),
+                predefinedType.ultraWarm(), predefinedType.natural(), predefinedType.coordinateScale(),
+                world.getWorldPropertyMap().getValue(WorldProperties.DRAGON_BATTLE), predefinedType.piglinSafe(), predefinedType.bedWorks(),
+                predefinedType.respawnAnchorWorks(), predefinedType.hasRaids(),
+                predefinedType.minY(), predefinedType.height(), predefinedType.logicalHeight(),
+                infiniburn,
+                predefinedType.effectsLocation(),
+                (float) light);
+
         ChunkGenerator chunkGenerator = worldDimension.generator();
 
-        World.Environment environment = getEnvironment(world);
+        ResourceKey<Level> worldKey = dimensionOverride == null ? ResourceKey.create(Registry.DIMENSION_REGISTRY,
+                new ResourceLocation(worldName.toLowerCase(Locale.ENGLISH))) : dimensionOverride;
+
+        InfernalWorldServer level;
 
         try {
-            return new InfernalWorldServer((CraftInfernalWorld) world, formatRegistry, worldDataServer, worldKey, dimensionKey, dimensionManager, chunkGenerator, environment);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            level = new InfernalWorldServer((CraftInfernalWorld) world, formatRegistry, worldDataServer, worldKey, dimension,
+                    type, chunkGenerator, environment);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex); // TODO: Something better here
         }
+
+        level.setReady(true);
+        level.setSpawnSettings(world.getWorldPropertyMap().getValue(WorldProperties.ALLOW_MONSTERS),
+                world.getWorldPropertyMap().getValue(WorldProperties.ALLOW_ANIMALS));
+
+        return level;
     }
 
     private World.Environment getEnvironment(InfernalWorld world) {
@@ -193,68 +288,19 @@ public class v1181InfernalNMS implements InfernalNMS<World> {
 
     @Override
     public void generateWorld(InfernalWorld infernalWorld) {
-        String worldName = infernalWorld.getName();
+       String worldName = infernalWorld.getName();
 
-        if (Bukkit.getWorld(worldName) != null) {
-            throw new IllegalArgumentException("World " + worldName + " already exists! Cannot generate it...");
-        }
+       if (Bukkit.getWorld(worldName) != null) throw new IllegalArgumentException("World " + worldName + " already exists!");
 
-        PrimaryLevelData worldDataServer = createWorldData(infernalWorld);
-        World.Environment environment = getEnvironment(infernalWorld);
-        ResourceKey<LevelStem> dimension;
+       InfernalWorldServer worldServer = createCustomWorld(infernalWorld, null);
+       registerWorld(worldServer);
+    }
 
-        switch (environment) {
-            case NORMAL -> dimension = LevelStem.OVERWORLD;
-            case NETHER -> dimension = LevelStem.NETHER;
-            case THE_END -> dimension = LevelStem.END;
-            default -> throw new IllegalArgumentException("Unknown Dimension Supplied");
-        }
-
-        MappedRegistry<LevelStem> materials = worldDataServer.worldGenSettings().dimensions();
-        LevelStem worldDimension = materials.get(dimension);
-        DimensionType dimensionManager = worldDimension.type();
-        ChunkGenerator chunkGenerator = worldDimension.generator();
-
-        ResourceKey<Level> worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY,
-                new ResourceLocation(worldName.toUpperCase(Locale.ENGLISH)));
-
-        InfernalWorldServer worldServer;
-
-        try {
-            worldServer = new InfernalWorldServer((CraftInfernalWorld) infernalWorld, formatRegistry, worldDataServer, worldKey,
-                    dimension, dimensionManager, chunkGenerator, environment);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        EndDragonFight dragonBattle = worldServer.dragonFight();
-        boolean runBattle = infernalWorld.getWorldPropertyMap().getValue(WorldProperties.DRAGON_BATTLE);
-
-        if (dragonBattle != null && !runBattle) {
-            dragonBattle.dragonEvent.setVisible(false);
-        }
-
-        worldServer.setReady(true);
-
+    public void registerWorld(InfernalWorldServer server) {
         MinecraftServer mcServer = MinecraftServer.getServer();
-        mcServer.initWorld(worldServer, worldDataServer, mcServer.getWorldData(), worldDataServer.worldGenSettings());
+        mcServer.initWorld(server, server.serverLevelData, mcServer.getWorldData(), server.serverLevelData.worldGenSettings());
 
-        mcServer.levels.put(worldKey, worldServer);
-
-        worldServer.setSpawnSettings(infernalWorld.getWorldPropertyMap().getValue(WorldProperties.ALLOW_MONSTERS),
-                infernalWorld.getWorldPropertyMap().getValue(WorldProperties.ALLOW_ANIMALS));
-
-        Bukkit.getPluginManager().callEvent(new WorldInitEvent(worldServer.getWorld()));
-        Bukkit.getPluginManager().callEvent(new WorldLoadEvent(worldServer.getWorld()));
+        mcServer.levels.put(server.dimension(), server);
     }
 
-    @Override
-    public NBTCompound convertChunk(NBTCompound chunkTag) {
-        CompoundTag nmsTag = (CompoundTag) Converter.convertToTag(chunkTag);
-        int version = nmsTag.getInt("DataVersion");
-
-        CompoundTag newNmsTag = NbtUtils.update(DataFixers.getDataFixer(), DataFixTypes.CHUNK, nmsTag, version);
-
-        return (NBTCompound) Converter.convertToNBT(newNmsTag);
-    }
 }
