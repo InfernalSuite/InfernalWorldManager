@@ -1,0 +1,5 @@
+{
+    if (com.infernalsuite.iwm.clsm.ClassModifier.saveChunk($0.q, $1)) {
+        return false;
+    }
+}
