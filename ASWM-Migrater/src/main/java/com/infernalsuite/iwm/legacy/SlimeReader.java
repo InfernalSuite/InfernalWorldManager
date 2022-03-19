@@ -15,9 +15,7 @@ public class SlimeReader {
     public static SlimeSerializedDataWrapper readSlimeWorld(String worldName) {
 
         SlimeSerializedDataWrapper serializedDataWrapper = new SlimeSerializedDataWrapper(
-                "slime",
                 worldName,
-                null,
                 null,
                 true
         );

@@ -88,10 +88,8 @@ public class FileLoader implements IWMLoader {
                 switch (StandardCharsets.UTF_8.decode(ByteBuffer.wrap(formatBytes)).toString()) {
                     case "slime" -> {
                         SlimeSerializedDataWrapper serializedDataWrapper = new SlimeSerializedDataWrapper(
-                                "slime",
                                 worldName,
                                 this,
-                                null,
                                 readOnly
                         );
 

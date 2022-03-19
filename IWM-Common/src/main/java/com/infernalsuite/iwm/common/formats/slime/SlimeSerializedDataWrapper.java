@@ -6,17 +6,19 @@ import com.infernalsuite.iwm.api.world.properties.WorldPropertyMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 @Getter
 @Setter
 @RequiredArgsConstructor
 public class SlimeSerializedDataWrapper implements SerializedDataWrapper {
 
+    private static final String FORMAT_NAME = "slime";
+
     // Serialization Metadata (not written to file)
-    private final String formatName;
+    private final String formatName = FORMAT_NAME;
     private final String worldName;
     private final IWMLoader loader;
-    private final WorldPropertyMap worldPropertyMap;
     private final boolean readOnly;
 
     // Format Info

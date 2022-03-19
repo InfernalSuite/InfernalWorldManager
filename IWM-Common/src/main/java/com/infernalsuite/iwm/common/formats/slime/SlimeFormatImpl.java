@@ -43,10 +43,8 @@ public class SlimeFormatImpl implements SlimeFormat {
         extraData.put("properties", craftInfernalWorld.getWorldPropertyMap().toCompound());
 
         SlimeSerializedDataWrapper serializedDataWrapper = new SlimeSerializedDataWrapper(
-                getName(),
                 world.getName(),
                 world.getLoader(),
-                world.getWorldPropertyMap(),
                 world.isReadOnly()
         );
 
