@@ -225,14 +225,149 @@ public class SlimeFormatImpl implements SlimeFormat {
         }
     }
 
+    @Override
+    public @NonNull SlimeSerializedDataWrapper readDataWrapper(@NonNull String worldName, boolean readOnly, @NonNull InputStream inputStream) {
+        DataInputStream dataStream = new DataInputStream(new BufferedInputStream(inputStream));
+        SlimeSerializedDataWrapper serializedDataWrapper = new SlimeSerializedDataWrapper(worldName, readOnly);
+        try {
+            // Read Format Info
+            int formatBytesLength = dataStream.readInt();
+            byte[] formatBytes = new byte[formatBytesLength];
+            serializedDataWrapper.setFormatBytesLength(formatBytesLength);
+            serializedDataWrapper.setFormatBytes(formatBytes);
 
-    public @NonNull SlimeSerializedDataWrapper readDataWrapper(@NonNull Map<Long, InputStream> inputStreams) {
-//        DataInputStream dataStream = new DataInputStream(new BufferedInputStream(inputStream));
-        return null;
+            // Read Format Metadata
+            byte[] slimeHeader = new byte[2];
+            dataStream.read(slimeHeader);
+            if (!Arrays.equals(slimeHeader, SlimeFormatImpl.SLIME_HEADER)) throw new IllegalStateException("Invalid Slime Header!");
+            serializedDataWrapper.setSlimeHeader(slimeHeader);
+
+            serializedDataWrapper.setSlimeVersion(dataStream.readByte());
+            serializedDataWrapper.setWorldVersion(dataStream.readByte());
+
+            // Read World Info
+            serializedDataWrapper.setMinX(dataStream.readInt());
+            serializedDataWrapper.setMinZ(dataStream.readInt());
+            int width = dataStream.readInt();
+            int depth = dataStream.readInt();
+            serializedDataWrapper.setWidth(width);
+            serializedDataWrapper.setDepth(depth);
+
+            // Read Chunk Data
+            int bitmaskSize = (int) Math.ceil((width * depth) / 8.0D);
+            byte[] chunkBitmask = new byte[bitmaskSize];
+            dataStream.read(chunkBitmask);
+            serializedDataWrapper.setChunkBitmask(chunkBitmask);
+
+            int compressedChunkDataLength = dataStream.readInt();
+            serializedDataWrapper.setCompressedChunkBytesLength(compressedChunkDataLength);
+            serializedDataWrapper.setChunkBytesLength(dataStream.readInt());
+            byte[] compressedChunkData = new byte[compressedChunkDataLength];
+            dataStream.read(compressedChunkData);
+            serializedDataWrapper.setChunkBytes(compressedChunkData);
+
+            // Read Tile Entities
+            int compressedTileEntitiesLength = dataStream.readInt();
+            serializedDataWrapper.setCompressedTileEntitiesLength(compressedTileEntitiesLength);
+            serializedDataWrapper.setTileEntitiesLength(dataStream.readInt());
+            byte[] compressedTileEntities = new byte[compressedTileEntitiesLength];
+            dataStream.read(compressedTileEntities);
+            serializedDataWrapper.setTileEntities(compressedTileEntities);
+
+            // Read Entities
+            boolean hasEntities = dataStream.readBoolean();
+            serializedDataWrapper.setHasEntities(hasEntities);
+            if (hasEntities) {
+                int compressedEntitiesLength = dataStream.readInt();
+                serializedDataWrapper.setCompressedEntitiesLength(compressedEntitiesLength);
+                serializedDataWrapper.setEntitiesLength(dataStream.readInt());
+                byte[] compressedEntities = new byte[compressedEntitiesLength];
+                dataStream.read(compressedEntities);
+                serializedDataWrapper.setEntities(compressedEntities);
+            }
+
+            // Read Extra NBT Data
+            int compressedNbtLength = dataStream.readInt();
+            serializedDataWrapper.setCompressedNbtLength(compressedNbtLength);
+            serializedDataWrapper.setNbtLength(dataStream.readInt());
+            byte[] compressedNbtData = new byte[compressedNbtLength];
+            dataStream.read(compressedNbtData);
+            serializedDataWrapper.setNbtBytes(compressedNbtData);
+
+            // Read World Maps Data
+            int compressedWorldMapsLength = dataStream.readInt();
+            serializedDataWrapper.setCompressedMapsTagLength(compressedWorldMapsLength);
+            serializedDataWrapper.setMapsTagLength(dataStream.readInt());
+            byte[] compressedWorldMaps = new byte[compressedWorldMapsLength];
+            dataStream.read(compressedWorldMaps);
+            serializedDataWrapper.setMapsTag(compressedWorldMaps);
+
+            if (dataStream.read() != -1) throw new IllegalStateException("Corrupted World!");
+
+            return serializedDataWrapper;
+        } catch (IOException e) {
+            // TODO: Throw a suitable exception here
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    public @NonNull Map<Long, OutputStream> writeDataWrapper(@NonNull SlimeSerializedDataWrapper serializedDataWrapper) {
-        return null;
+    @Override
+    public void writeDataWrapper(@NonNull SerializedDataWrapper serializedDataWrapper, @NonNull OutputStream outputStream) {
+        if (serializedDataWrapper instanceof SlimeSerializedDataWrapper slimeSerializedDataWrapper) {
+            DataOutputStream dataStream = new DataOutputStream(new BufferedOutputStream(outputStream));
+            try {
+                // Write Format Info
+                dataStream.writeInt(slimeSerializedDataWrapper.getFormatBytesLength());
+                dataStream.write(slimeSerializedDataWrapper.getFormatBytes());
+
+                // Write Format Metadata
+                dataStream.write(slimeSerializedDataWrapper.getSlimeHeader());
+                dataStream.writeByte(slimeSerializedDataWrapper.getSlimeVersion());
+                dataStream.writeByte(slimeSerializedDataWrapper.getWorldVersion());
+
+                // Write World Info
+                dataStream.writeInt(slimeSerializedDataWrapper.getMinX());
+                dataStream.writeInt(slimeSerializedDataWrapper.getMinZ());
+                dataStream.writeInt(slimeSerializedDataWrapper.getWidth());
+                dataStream.writeInt(slimeSerializedDataWrapper.getDepth());
+
+                // Write Chunk Data
+                dataStream.write(slimeSerializedDataWrapper.getChunkBitmask());
+                dataStream.writeInt(slimeSerializedDataWrapper.getCompressedChunkBytesLength());
+                dataStream.writeInt(slimeSerializedDataWrapper.getChunkBytesLength());
+                dataStream.write(slimeSerializedDataWrapper.getChunkBytes());
+
+                // Write Tile Entities
+                dataStream.writeInt(slimeSerializedDataWrapper.getCompressedTileEntitiesLength());
+                dataStream.writeInt(slimeSerializedDataWrapper.getTileEntitiesLength());
+                dataStream.write(slimeSerializedDataWrapper.getTileEntities());
+
+                // Write Entities
+                boolean hasEntities = slimeSerializedDataWrapper.isHasEntities();
+                dataStream.writeBoolean(hasEntities);
+                if (hasEntities) {
+                    dataStream.writeInt(slimeSerializedDataWrapper.getCompressedEntitiesLength());
+                    dataStream.writeInt(slimeSerializedDataWrapper.getEntitiesLength());
+                    dataStream.write(slimeSerializedDataWrapper.getEntities());
+                }
+
+                // Write Extra NBT Data
+                dataStream.writeInt(slimeSerializedDataWrapper.getCompressedNbtLength());
+                dataStream.writeInt(slimeSerializedDataWrapper.getNbtLength());
+                dataStream.write(slimeSerializedDataWrapper.getNbtBytes());
+
+                // Write World Maps Data
+                dataStream.writeInt(slimeSerializedDataWrapper.getCompressedMapsTagLength());
+                dataStream.writeInt(slimeSerializedDataWrapper.getMapsTagLength());
+                dataStream.write(slimeSerializedDataWrapper.getMapsTag());
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            throw new IllegalStateException("Slime Format Implementation cannot write non-slime format data!");
+        }
     }
 
     //region Serialization Helpers
