@@ -1,5 +1,6 @@
 package com.infernalsuite.iwm.common.api;
 
+import com.infernalsuite.iwm.api.IWMProvider;
 import com.infernalsuite.iwm.api.InfernalWorldManager;
 import com.infernalsuite.iwm.api.event.EventBus;
 import com.infernalsuite.iwm.api.event.EventDispatcher;
@@ -38,7 +39,7 @@ public class IWMApi implements InfernalWorldManager {
             iwmClassLoader = bootstrap.getClass().getClassLoader();
         }
 
-        for (Class<?> apiClass : new Class[]{InfernalWorldManager.class, IWMApi.class}) {
+        for (Class<?> apiClass : new Class[]{InfernalWorldManager.class, IWMProvider.class}) {
             ClassLoader apiClassLoader = apiClass.getClassLoader();
 
             if (!apiClassLoader.equals(iwmClassLoader)) {
