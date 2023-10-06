@@ -1,14 +1,6 @@
 plugins {
     `java-library`
-}
-
-buildscript {
-    repositories {
-        maven("https://plugins.gradle.org/m2/")
-    }
-    dependencies {
-        classpath("io.freefair.gradle:lombok-plugin:6.3.0")
-    }
+    id("io.freefair.lombok") version "8.3" apply false
 }
 
 allprojects {
@@ -27,11 +19,10 @@ allprojects {
     }
 
     dependencies {
-        implementation("org.checkerframework:checker-qual:3.21.2")
+        implementation("org.checkerframework:checker-qual:3.39.0")
         implementation("co.aikar:locales:1.0-SNAPSHOT")
-        implementation("io.github.jglrxavpok.hephaistos:common:2.4.1")
-        compileOnly("org.jetbrains:annotations:22.0.0")
-        compileOnly("org.projectlombok:lombok:1.18.22")
+        implementation("io.github.jglrxavpok.hephaistos:common:2.6.1")
+        compileOnly("org.jetbrains:annotations:24.0.1")
     }
 
     tasks.withType<JavaCompile> {
