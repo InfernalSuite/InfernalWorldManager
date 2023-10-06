@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Philip Kelley <philip@thoriumcube.org>
+Date: Fri, 6 Oct 2023 15:43:16 +0100
+Subject: [PATCH] Build Changes
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 683159586641dd9aa42ae96fa51602469755723f..84b7f0f395fae89ef4efb9fb4302bdf314fbd58f 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -13,8 +13,12 @@ configurations.named(log4jPlugins.compileClasspathConfigurationName) {
+ val alsoShade: Configuration by configurations.creating
+ 
+ dependencies {
+-    implementation(project(":paper-api"))
+-    implementation(project(":paper-mojangapi"))
++    // IWM start
++    implementation(project(":IWM-Paper:iwm-api"))
++    implementation("io.papermc.paper:paper-mojangapi:1.20.2-R0.1-SNAPSHOT") {
++        exclude("io.papermc.paper", "paper-api")
++    }
++    // IWM end
+     // Paper start
+     implementation("org.jline:jline-terminal-jansi:3.21.0")
+     implementation("net.minecrell:terminalconsoleappender:1.3.0")
