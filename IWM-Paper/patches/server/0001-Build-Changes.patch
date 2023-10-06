@@ -5,10 +5,10 @@ Subject: [PATCH] Build Changes
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 683159586641dd9aa42ae96fa51602469755723f..84b7f0f395fae89ef4efb9fb4302bdf314fbd58f 100644
+index 683159586641dd9aa42ae96fa51602469755723f..2c3b8a0e6c3b3fd1c9bf9a422ad0f4a919dd984d 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
-@@ -13,8 +13,12 @@ configurations.named(log4jPlugins.compileClasspathConfigurationName) {
+@@ -13,8 +13,13 @@ configurations.named(log4jPlugins.compileClasspathConfigurationName) {
  val alsoShade: Configuration by configurations.creating
  
  dependencies {
@@ -16,6 +16,7 @@ index 683159586641dd9aa42ae96fa51602469755723f..84b7f0f395fae89ef4efb9fb4302bdf3
 -    implementation(project(":paper-mojangapi"))
 +    // IWM start
 +    implementation(project(":IWM-Paper:iwm-api"))
++    implementation(project(":IWM-Common"))
 +    implementation("io.papermc.paper:paper-mojangapi:1.20.2-R0.1-SNAPSHOT") {
 +        exclude("io.papermc.paper", "paper-api")
 +    }
