@@ -1,6 +1,0 @@
-{
-     java.lang.Object obj = com.infernalsuite.iwm.clsm.ClassModifier.injectCustomWorlds();
-     if (obj != null) {
-        return (net.minecraft.core.RegistryMaterials) obj;
-     }
-}

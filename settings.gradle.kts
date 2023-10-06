@@ -7,13 +7,10 @@ pluginManagement {
 }
 
 rootProject.name = "InfernalWorldManager"
-include(":IWM-Classmodifier")
 include(":IWM-Common")
 include(":IWM-API")
 include(":ASWM-Migrater")
 include(":IWM-Common:loader-utils")
-include(":IWM-NMS-v1_18_1")
-include("IWM-NMS-v1_18_2")
 include("IWM-Paper")
 include("IWM-Paper:iwm-api")
 include("IWM-Paper:iwm-server")
