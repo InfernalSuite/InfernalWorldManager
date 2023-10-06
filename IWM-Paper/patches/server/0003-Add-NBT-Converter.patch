@@ -1,0 +1,104 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Philip Kelley <philip@thoriumcube.org>
+Date: Fri, 6 Oct 2023 23:02:17 +0100
+Subject: [PATCH] Add NBT Converter
+
+
+diff --git a/src/main/java/com/infernalsuite/iwm/Converter.java b/src/main/java/com/infernalsuite/iwm/Converter.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..a2dba65ee2a005f7b7a2aaf1ad509856490d5310
+--- /dev/null
++++ b/src/main/java/com/infernalsuite/iwm/Converter.java
+@@ -0,0 +1,92 @@
++package com.infernalsuite.iwm;
++
++import com.infernalsuite.iwm.api.utils.NBTLibTypes;
++import com.infernalsuite.iwm.api.utils.NibbleArray;
++import com.mojang.logging.LogUtils;
++import lombok.experimental.UtilityClass;
++import net.minecraft.nbt.*;
++import net.minecraft.world.level.chunk.DataLayer;
++import org.jglrxavpok.hephaistos.nbt.*;
++import org.slf4j.Logger;
++
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++/**
++ * Utility class to convert between NMS Native NBT Tags and Hephaistos NBT Tags
++ */
++@UtilityClass
++public class Converter {
++
++    private static final Logger LOGGER = LogUtils.getClassLogger();
++
++    public static DataLayer convertArray(NibbleArray array) {
++        return new DataLayer(array.getBackingArray());
++    }
++
++    public static NibbleArray convertArray(DataLayer array) {
++        return array == null ? null : new NibbleArray(array.getData());
++    }
++
++    public static Tag convertToTag(NBT nbt) {
++        try {
++            return switch (NBTLibTypes.getEnumRep(nbt.getID())) {
++                case TAG_BYTE -> ByteTag.valueOf(((NBTByte) nbt).getValue());
++                case TAG_SHORT -> ShortTag.valueOf(((NBTShort) nbt).getValue());
++                case TAG_INT -> IntTag.valueOf(((NBTInt) nbt).getValue());
++                case TAG_LONG -> LongTag.valueOf(((NBTLong) nbt).getValue());
++                case TAG_DOUBLE -> DoubleTag.valueOf(((NBTDouble) nbt).getValue());
++                case TAG_BYTE_ARRAY -> new ByteArrayTag(((NBTByteArray) nbt).getValue().copyArray());
++                case TAG_STRING -> StringTag.valueOf(((NBTString) nbt).getValue());
++                case TAG_LIST -> {
++                    ListTag listTag = new ListTag();
++                    ((NBTList<?>) nbt).asListView().stream().map(Converter::convertToTag).forEach(listTag::add);
++                    yield listTag;
++                }
++                case TAG_COMPOUND -> {
++                    CompoundTag compoundTag = new CompoundTag();
++                    ((NBTCompound) nbt).forEach((key, value) -> compoundTag.put(key, convertToTag(value)));
++                    yield compoundTag;
++                }
++                case TAG_INT_ARRAY -> new IntArrayTag(((NBTIntArray) nbt).getValue().copyArray());
++                case TAG_LONG_ARRAY -> new LongArrayTag(((NBTLongArray) nbt).getValue().copyArray());
++                default -> throw new IllegalArgumentException("Invalid tag type: " + nbt.getID().getReadableName());
++            };
++        } catch (final Exception ex) {
++            LOGGER.error("Exception during convertToTag", ex);
++            return null;
++        }
++    }
++
++    public static NBT convertToNbt(Tag tag) {
++        return switch (tag.getId()) {
++            case Tag.TAG_BYTE -> new NBTByte(((ByteTag) tag).getAsByte());
++            case Tag.TAG_SHORT -> new NBTShort(((ShortTag) tag).getAsShort());
++            case Tag.TAG_INT -> new NBTInt(((IntTag) tag).getAsInt());
++            case Tag.TAG_LONG -> new NBTLong(((LongTag) tag).getAsLong());
++            case Tag.TAG_FLOAT -> new NBTFloat(((FloatTag) tag).getAsFloat());
++            case Tag.TAG_DOUBLE -> new NBTDouble(((DoubleTag) tag).getAsDouble());
++            case Tag.TAG_BYTE_ARRAY -> new NBTByteArray(((ByteArrayTag) tag).getAsByteArray());
++            case Tag.TAG_STRING -> new NBTString(((StringTag) tag).getAsString());
++            case Tag.TAG_LIST -> {
++                ListTag listTag = (ListTag) tag;
++                List<NBT> list = new ArrayList<>(listTag.size());
++                listTag.stream().map(Converter::convertToNbt).forEach(list::add);
++                yield new NBTList<>(NBTType.byIndex(listTag.getElementType()), list);
++            }
++            case Tag.TAG_COMPOUND -> {
++                CompoundTag compoundTag = (CompoundTag) tag;
++                Map<String, NBT> compoundMap = new HashMap<>();
++                //noinspection DataFlowIssue
++                compoundTag.getAllKeys().forEach(key -> compoundMap.put(key, convertToNbt(compoundTag.get(key))));
++                yield new NBTCompound(compoundMap);
++            }
++            case Tag.TAG_INT_ARRAY -> new NBTIntArray(((IntArrayTag) tag).getAsIntArray());
++            case Tag.TAG_LONG_ARRAY -> new NBTLongArray(((LongArrayTag) tag).getAsLongArray());
++            default -> throw new IllegalArgumentException("Invalid tag type: " + tag.getId());
++        };
++    }
++
++}
