@@ -53,15 +53,6 @@ public interface InfernalChunk {
     int getMaxSection();
 
     /**
-     * Gets all the biomes of the chunk.
-     *
-     * @apiNote Pre 1.17 Only ({@code null} for post 1.17)
-     *
-     * @return an {@code int[]} containing all the biomes of the chunk
-     */
-    int[] getBiomes();
-
-    /**
      * Gets the height maps of the chunk.
      *
      * @return a {@link NBTCompound} containing all the height maps of the chunk
