@@ -6,31 +6,53 @@ Subject: [PATCH] Add NMSInfernalChunk
 
 diff --git a/src/main/java/com/infernalsuite/iwm/level/NMSInfernalChunk.java b/src/main/java/com/infernalsuite/iwm/level/NMSInfernalChunk.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..76ca47985bf7a14b185d26c6e22cd8bec1e9e5e4
+index 0000000000000000000000000000000000000000..f2e0cdf6f1d8b68025632910fac6c5e54279f5ea
 --- /dev/null
 +++ b/src/main/java/com/infernalsuite/iwm/level/NMSInfernalChunk.java
-@@ -0,0 +1,69 @@
+@@ -0,0 +1,194 @@
 +package com.infernalsuite.iwm.level;
 +
++import com.google.common.collect.Lists;
 +import com.infernalsuite.iwm.Converter;
++import com.infernalsuite.iwm.api.utils.NibbleArray;
 +import com.infernalsuite.iwm.api.world.InfernalChunk;
++import com.infernalsuite.iwm.api.world.InfernalChunkSection;
++import com.infernalsuite.iwm.common.skeleton.InfernalChunkSectionSkeleton;
 +import com.mojang.logging.LogUtils;
++import com.mojang.serialization.Codec;
++import io.papermc.paper.world.ChunkEntitySlices;
 +import net.minecraft.core.Holder;
 +import net.minecraft.core.Registry;
++import net.minecraft.core.SectionPos;
 +import net.minecraft.core.registries.Registries;
++import net.minecraft.nbt.CompoundTag;
 +import net.minecraft.nbt.NbtOps;
 +import net.minecraft.nbt.Tag;
 +import net.minecraft.server.MinecraftServer;
++import net.minecraft.world.entity.Entity;
++import net.minecraft.world.level.LightLayer;
 +import net.minecraft.world.level.biome.Biome;
 +import net.minecraft.world.level.biome.Biomes;
 +import net.minecraft.world.level.block.Block;
 +import net.minecraft.world.level.block.Blocks;
++import net.minecraft.world.level.block.entity.BlockEntity;
 +import net.minecraft.world.level.block.state.BlockState;
 +import net.minecraft.world.level.chunk.LevelChunk;
++import net.minecraft.world.level.chunk.LevelChunkSection;
 +import net.minecraft.world.level.chunk.PalettedContainer;
++import net.minecraft.world.level.chunk.PalettedContainerRO;
 +import net.minecraft.world.level.chunk.storage.ChunkSerializer;
++import net.minecraft.world.level.lighting.LevelLightEngine;
++import org.checkerframework.checker.nullness.qual.NonNull;
++import org.jglrxavpok.hephaistos.nbt.NBT;
 +import org.jglrxavpok.hephaistos.nbt.NBTCompound;
++import org.jglrxavpok.hephaistos.nbt.NBTLongArray;
 +import org.slf4j.Logger;
++
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
 +
 +public class NMSInfernalChunk implements InfernalChunk {
 +
@@ -68,6 +90,21 @@ index 0000000000000000000000000000000000000000..76ca47985bf7a14b185d26c6e22cd8be
 +    }
 +
 +    @Override
++    public @NonNull String getWorldName() {
++        return this.chunk.getChunkHolder().world.getWorld().getName(); // TODO - Is this really the only way to get this??
++    }
++
++    @Override
++    public int getMinSection() {
++        return this.chunk.getMinSection();
++    }
++
++    @Override
++    public int getMaxSection() {
++        return this.chunk.getMaxSection();
++    }
++
++    @Override
 +    public int getX() {
 +        return this.chunk.getPos().x;
 +    }
@@ -77,5 +114,93 @@ index 0000000000000000000000000000000000000000..76ca47985bf7a14b185d26c6e22cd8be
 +        return this.chunk.getPos().z;
 +    }
 +
++    @Override
++    public InfernalChunkSection[] getSections() {
++        InfernalChunkSection[] sections = new InfernalChunkSection[this.chunk.getSectionsCount()];
++        LevelLightEngine lightEngine = this.chunk.getLevel().getLightEngine();
 +
++        Registry<Biome> biomeRegistry = this.chunk.getLevel().registryAccess().registryOrThrow(Registries.BIOME);
++
++        Codec<PalettedContainerRO<Holder<Biome>>> codec = PalettedContainer.codecRO(biomeRegistry.asHolderIdMap(),
++                biomeRegistry.holderByNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES,
++                biomeRegistry.getHolderOrThrow(Biomes.PLAINS));
++
++        for (int sectionId = 0; sectionId < this.chunk.getSections().length; sectionId++) {
++            LevelChunkSection section = this.chunk.getSections()[sectionId];
++
++            NibbleArray blockLightArray = Converter.convertArray(lightEngine.getLayerListener(LightLayer.BLOCK)
++                    .getDataLayerData(SectionPos.of(chunk.getPos(), sectionId)));
++
++            NibbleArray skyLightArray = Converter.convertArray(lightEngine.getLayerListener(LightLayer.SKY)
++                    .getDataLayerData(SectionPos.of(chunk.getPos(), sectionId)));
++
++            NBTCompound blockStateNbt;
++            if (section.hasOnlyAir()) {
++                blockStateNbt = EMPTY_BLOCK_STATE_PALETTE;
++            } else {
++                Tag data = ChunkSerializer.BLOCK_STATE_CODEC.encodeStart(NbtOps.INSTANCE, section.getStates())
++                        .getOrThrow(false, LOGGER::error);
++                blockStateNbt = (NBTCompound) Converter.convertToNbt(data);
++            }
++
++            NBTCompound biomeNbt;
++            PalettedContainer<Holder<Biome>> biomes = (PalettedContainer<Holder<Biome>>) section.getBiomes();
++            if (biomes.data.palette().getSize() == 1 && biomes.data.palette().maybeHas(h -> h.is(Biomes.PLAINS))) {
++                biomeNbt = EMPTY_BIOME_PALETTE;
++            } else {
++                Tag biomeData = codec.encodeStart(NbtOps.INSTANCE, section.getBiomes()).getOrThrow(false, LOGGER::error);
++                biomeNbt = (NBTCompound) Converter.convertToNbt(biomeData);
++            }
++
++            sections[sectionId] = new InfernalChunkSectionSkeleton(blockStateNbt, biomeNbt, blockLightArray, skyLightArray);
++        }
++
++        return sections;
++    }
++
++    @Override
++    public @NonNull NBTCompound getHeightMaps() {
++        Map<String, NBT> heightMaps = new HashMap<>();
++
++        this.chunk.heightmaps.entrySet().stream()
++                .filter(e -> e.getKey().keepAfterWorldgen())
++                .forEach(e -> heightMaps.put(e.getKey().name(), new NBTLongArray(e.getValue().getRawData())));
++
++        return new NBTCompound(heightMaps);
++    }
++
++    @Override
++    public @NonNull List<NBTCompound> getTileEntities() {
++        return this.chunk.blockEntities.values().stream()
++                .map(BlockEntity::saveWithFullMetadata)
++                .map(t -> (NBTCompound) Converter.convertToNbt(t))
++                .toList();
++    }
++
++    @Override
++    public @NonNull List<NBTCompound> getEntities() {
++        if (this.chunk == null) {
++            return new ArrayList<>();
++        }
++
++        ChunkEntitySlices slices = this.chunk.getChunkHolder().getEntityChunk();
++        if (slices == null) return new ArrayList<>();
++
++        List<CompoundTag> entities = new ArrayList<>();
++
++        for (Entity entity : slices.entities) {
++            CompoundTag entityTag = new CompoundTag();
++            try {
++                if (entity.save(entityTag)) entities.add(entityTag);
++            } catch (final Exception e) {
++                LOGGER.error("Could not save the entity: {}", entity, e);
++            }
++        }
++
++        return Lists.transform(entities, tag -> (NBTCompound) Converter.convertToNbt(tag));
++    }
++
++    public LevelChunk getChunk() { return this.chunk; }
++
++    public void setChunk(LevelChunk chunk) { this.chunk = chunk; }
 +}
