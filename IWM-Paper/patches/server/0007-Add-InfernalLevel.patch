@@ -1,0 +1,70 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Philip Kelley <philip@thoriumcube.org>
+Date: Sun, 8 Oct 2023 21:15:15 +0100
+Subject: [PATCH] Add InfernalLevel
+
+
+diff --git a/src/main/java/com/infernalsuite/iwm/level/InfernalLevel.java b/src/main/java/com/infernalsuite/iwm/level/InfernalLevel.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..74a522cfb596ef5e8fa253285efb9273c89ea40f
+--- /dev/null
++++ b/src/main/java/com/infernalsuite/iwm/level/InfernalLevel.java
+@@ -0,0 +1,58 @@
++package com.infernalsuite.iwm.level;
++
++import com.google.common.util.concurrent.ThreadFactoryBuilder;
++import net.minecraft.resources.ResourceKey;
++import net.minecraft.server.MinecraftServer;
++import net.minecraft.server.level.ServerLevel;
++import net.minecraft.util.datafix.DataFixers;
++import net.minecraft.world.level.Level;
++import net.minecraft.world.level.dimension.LevelStem;
++import net.minecraft.world.level.storage.LevelStorageSource;
++import net.minecraft.world.level.storage.PrimaryLevelData;
++import net.minecraft.world.level.validation.DirectoryValidator;
++import org.apache.commons.io.FileUtils;
++import org.bukkit.World;
++
++import java.io.IOException;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.util.Collections;
++import java.util.UUID;
++import java.util.concurrent.ExecutorService;
++import java.util.concurrent.Executors;
++import java.util.concurrent.locks.ReentrantReadWriteLock;
++
++public class InfernalLevel extends ServerLevel {
++
++    public static LevelStorageSource CUSTOM_LEVEL_STORAGE;
++
++    static {
++        try {
++            Path path = Files.createTempDirectory("iwm-" + UUID.randomUUID().toString().substring(0, 5)).toAbsolutePath();
++            DirectoryValidator directoryValidator = LevelStorageSource.parseValidator(path.resolve("allowed_symlinks.txt"));
++            CUSTOM_LEVEL_STORAGE = new LevelStorageSource(path, path, directoryValidator, DataFixers.getDataFixer());
++            FileUtils.forceDeleteOnExit(path.toFile());
++        } catch (final IOException e) {
++            throw new IllegalStateException("Couldn't create dummy file directory", e);
++        }
++    }
++
++    private static final ExecutorService WORLD_SAVER_SERVICE = Executors.newFixedThreadPool(4, new ThreadFactoryBuilder()
++            .setNameFormat("IWM Pool Thread #%1$d").build());
++
++    private final ReentrantReadWriteLock saveLock = new ReentrantReadWriteLock();
++
++    private boolean ready = false;
++
++    public InfernalLevel(InfernalBootstrap infernalBootstrap, PrimaryLevelData primaryLevelData,
++                         ResourceKey<Level> worldKey, ResourceKey<LevelStem> dimensionKey, LevelStem worldDimension,
++                         World.Environment environment) throws IOException {
++        super(infernalBootstrap, MinecraftServer.getServer(), MinecraftServer.getServer().executor,
++                CUSTOM_LEVEL_STORAGE.createAccess(infernalBootstrap.initial().getName() + UUID.randomUUID(), dimensionKey),
++                primaryLevelData, worldKey, worldDimension, MinecraftServer.getServer().progressListenerFactory.create(11),
++                false, 0, Collections.emptyList(), true, null, environment, null, null);
++
++
++    }
++
++}

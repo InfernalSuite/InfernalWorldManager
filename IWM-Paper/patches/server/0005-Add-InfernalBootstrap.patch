@@ -1,0 +1,17 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Philip Kelley <philip@thoriumcube.org>
+Date: Sun, 8 Oct 2023 21:13:56 +0100
+Subject: [PATCH] Add InfernalBootstrap
+
+
+diff --git a/src/main/java/com/infernalsuite/iwm/level/InfernalBootstrap.java b/src/main/java/com/infernalsuite/iwm/level/InfernalBootstrap.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..96dd8e7361c30dbfa91b3b3ae4e00998efd88726
+--- /dev/null
++++ b/src/main/java/com/infernalsuite/iwm/level/InfernalBootstrap.java
+@@ -0,0 +1,5 @@
++package com.infernalsuite.iwm.level;
++
++import com.infernalsuite.iwm.api.world.InfernalWorld;
++
++public record InfernalBootstrap(InfernalWorld initial) {}
