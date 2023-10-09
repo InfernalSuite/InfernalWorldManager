@@ -1,0 +1,89 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Philip Kelley <philip@thoriumcube.org>
+Date: Mon, 9 Oct 2023 23:00:26 +0100
+Subject: [PATCH] Add SafeNmsChunkWrapper
+
+
+diff --git a/src/main/java/com/infernalsuite/iwm/level/SafeNmsChunkWrapper.java b/src/main/java/com/infernalsuite/iwm/level/SafeNmsChunkWrapper.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..d6e40cd915e13c37da5cef0c6dfc27fd9423bdfd
+--- /dev/null
++++ b/src/main/java/com/infernalsuite/iwm/level/SafeNmsChunkWrapper.java
+@@ -0,0 +1,77 @@
++package com.infernalsuite.iwm.level;
++
++import com.infernalsuite.iwm.api.world.InfernalChunk;
++import com.infernalsuite.iwm.api.world.InfernalChunkSection;
++import org.checkerframework.checker.nullness.qual.NonNull;
++import org.jglrxavpok.hephaistos.nbt.NBTCompound;
++
++import java.util.List;
++
++public class SafeNmsChunkWrapper implements InfernalChunk {
++
++    private final NMSInfernalChunk wrapper;
++    private final InfernalChunk safety;
++
++    public SafeNmsChunkWrapper(NMSInfernalChunk wrapper, InfernalChunk safety) {
++        this.wrapper = wrapper;
++        this.safety = safety;
++    }
++
++    @Override
++    public int getX() {
++        return this.wrapper.getX();
++    }
++
++    @Override
++    public int getZ() {
++        return this.wrapper.getZ();
++    }
++
++    @Override
++    public int getMinSection() {
++        return this.wrapper.getMinSection();
++    }
++
++    @Override
++    public int getMaxSection() {
++        return this.wrapper.getMaxSection();
++    }
++
++    @Override
++    public @NonNull String getWorldName() {
++        return this.wrapper.getWorldName();
++    }
++
++    @Override
++    public InfernalChunkSection[] getSections() {
++        if (shouldDefaultBackToSlimeChunk()) return this.safety.getSections();
++        return this.wrapper.getSections();
++    }
++
++    @Override
++    public @NonNull NBTCompound getHeightMaps() {
++        if (shouldDefaultBackToSlimeChunk()) return this.safety.getHeightMaps();
++        return this.wrapper.getHeightMaps();
++    }
++
++    @Override
++    public @NonNull List<NBTCompound> getTileEntities() {
++        if (shouldDefaultBackToSlimeChunk()) return this.safety.getTileEntities();
++        return this.wrapper.getTileEntities();
++    }
++
++    @Override
++    public @NonNull List<NBTCompound> getEntities() {
++        if (shouldDefaultBackToSlimeChunk()) return this.safety.getEntities();
++        return this.wrapper.getEntities();
++    }
++
++    public boolean shouldDefaultBackToSlimeChunk() {
++        return this.safety != null && !this.wrapper.getChunk().loaded;
++    }
++
++    public NMSInfernalChunk getWrapper() { return this.wrapper; }
++
++    public InfernalChunk getSafety() { return this.safety; }
++
++}
