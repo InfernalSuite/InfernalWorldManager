@@ -6,7 +6,7 @@ Subject: [PATCH] Add NMSInfernalChunk
 
 diff --git a/src/main/java/com/infernalsuite/iwm/level/NMSInfernalChunk.java b/src/main/java/com/infernalsuite/iwm/level/NMSInfernalChunk.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f2e0cdf6f1d8b68025632910fac6c5e54279f5ea
+index 0000000000000000000000000000000000000000..657b1deb99bf3ffd60078bce243c5327390cbe5c
 --- /dev/null
 +++ b/src/main/java/com/infernalsuite/iwm/level/NMSInfernalChunk.java
 @@ -0,0 +1,194 @@
@@ -91,7 +91,7 @@ index 0000000000000000000000000000000000000000..f2e0cdf6f1d8b68025632910fac6c5e5
 +
 +    @Override
 +    public @NonNull String getWorldName() {
-+        return this.chunk.getChunkHolder().world.getWorld().getName(); // TODO - Is this really the only way to get this??
++        return this.chunk.getChunkHolder().world.serverLevelData.getLevelName();
 +    }
 +
 +    @Override
