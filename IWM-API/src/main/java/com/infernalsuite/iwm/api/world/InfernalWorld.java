@@ -72,12 +72,12 @@ public interface InfernalWorld {
      */
     boolean isReadOnly();
 
-    /**
-     * Gets whether the world is locked.
-     *
-     * @return {@code true} if the world is locked
-     */
-    boolean isLocked();
+//    /**
+//     * Gets whether the world is locked.
+//     *
+//     * @return {@code true} if the world is locked
+//     */
+//    boolean isLocked();
 
     /**
      * Gets the name of the format which this world is stored in.
