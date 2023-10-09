@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Philip Kelley <philip@thoriumcube.org>
+Date: Mon, 9 Oct 2023 22:14:44 +0100
+Subject: [PATCH] Add InfernalLevelGenerator
+
+
+diff --git a/src/main/java/com/infernalsuite/iwm/level/InfernalLevelGenerator.java b/src/main/java/com/infernalsuite/iwm/level/InfernalLevelGenerator.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..398c153d2fa276fac8f3d5e839def16fd0ae4a84
+--- /dev/null
++++ b/src/main/java/com/infernalsuite/iwm/level/InfernalLevelGenerator.java
+@@ -0,0 +1,40 @@
++package com.infernalsuite.iwm.level;
++
++import com.mojang.serialization.Codec;
++import net.minecraft.core.Holder;
++import net.minecraft.world.level.biome.Biome;
++import net.minecraft.world.level.biome.BiomeSource;
++import net.minecraft.world.level.biome.Climate;
++import net.minecraft.world.level.levelgen.FlatLevelSource;
++import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
++
++import java.util.List;
++import java.util.Optional;
++import java.util.stream.Stream;
++
++public class InfernalLevelGenerator extends FlatLevelSource {
++
++    public InfernalLevelGenerator(Holder<Biome> biome) {
++        super(new FlatLevelGeneratorSettings(Optional.empty(), biome, List.of()), getSource(biome));
++    }
++
++    private static BiomeSource getSource(Holder<Biome> biome) {
++        return new BiomeSource() {
++            @Override
++            protected Codec<? extends BiomeSource> codec() {
++                return null;
++            }
++
++            @Override
++            protected Stream<Holder<Biome>> collectPossibleBiomes() {
++                return Stream.of(biome);
++            }
++
++            @Override
++            public Holder<Biome> getNoiseBiome(int x, int y, int z, Climate.Sampler noise) {
++                return biome;
++            }
++        };
++    }
++
++}
