@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Philip Kelley <philip@thoriumcube.org>
+Date: Tue, 10 Oct 2023 22:40:37 +0100
+Subject: [PATCH] Add custom serialization support
+
+
+diff --git a/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java b/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java
+index b66a7d4aab887309579154815a0d4abf9de506b0..3e2d1e2fe973e87a29978df107f5d5e968e02c4d 100644
+--- a/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java
++++ b/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java
+@@ -10,6 +10,12 @@ import com.google.gson.JsonArray;
+ import com.google.gson.JsonElement;
+ import com.google.gson.JsonObject;
+ import com.google.gson.JsonPrimitive;
++import com.infernalsuite.iwm.api.IWMProvider;
++import com.infernalsuite.iwm.api.InfernalWorldManager;
++import com.infernalsuite.iwm.api.formats.Format;
++import com.infernalsuite.iwm.api.formats.FormatRegistry;
++import com.infernalsuite.iwm.common.api.IWMApi;
++import com.infernalsuite.iwm.level.InfernalLevel;
+ import com.mojang.logging.LogUtils;
+ import io.papermc.paper.chunk.system.io.RegionFileIOThread;
+ import io.papermc.paper.chunk.system.poi.PoiChunk;
+@@ -1881,6 +1887,21 @@ public final class NewChunkHolder {
+                 }
+             }
+ 
++            // IWM Start - Custom Serialization
++            if (this.world instanceof InfernalLevel infernalLevel) {
++                InfernalWorldManager iwmAPI = IWMProvider.get();
++                FormatRegistry formatRegistry = iwmAPI.getFormatRegistry();
++                String formatName = infernalLevel.infernalWorld.getFormatName();
++                formatRegistry.getFormat(formatName).thenAccept(optFormat -> optFormat.ifPresentOrElse(format -> {
++                    // TODO: Rework format and serialization wrappers
++                }, () -> {
++                    String errorMessage = "Format '" + formatName + "' for world '" + infernalLevel.infernalWorld.getName()
++                            + "' was not present in the FormatRegistry!";
++                    throw new IllegalStateException(errorMessage);
++                }));
++            }
++            // IWM End
++
+             final CompoundTag save = ChunkSerializer.saveChunk(this.world, chunk, null);
+ 
+             if (unloading) {
