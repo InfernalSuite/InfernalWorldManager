@@ -5,7 +5,7 @@ Subject: [PATCH] Modify ServerLevel for IWM Hooks
 
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index 868951dc21aff541765b1f58f08cdf3c47446d25..cb361c5dfb9eb07343d458aa087e972d21f0465d 100644
+index 868951dc21aff541765b1f58f08cdf3c47446d25..801a4bff076845ab8ade5838de5eae00eda3e739 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -3,6 +3,7 @@ package net.minecraft.server.level;
@@ -45,14 +45,16 @@ index 868951dc21aff541765b1f58f08cdf3c47446d25..cb361c5dfb9eb07343d458aa087e972d
          = new io.papermc.paper.chunk.system.io.RegionFileIOThread.ChunkDataController(io.papermc.paper.chunk.system.io.RegionFileIOThread.RegionFileType.ENTITY_DATA) {
  
          @Override
-@@ -418,6 +421,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
+@@ -418,7 +421,8 @@ public class ServerLevel extends Level implements WorldGenLevel {
              return ServerLevel.this.readEntityChunk(chunkX, chunkZ);
          }
      };
+-    private final EntityRegionFileStorage entityStorage;
 +    // IWM End
-     private final EntityRegionFileStorage entityStorage;
++    public final EntityRegionFileStorage entityStorage; // IWM - private -> public
  
      private static final class EntityRegionFileStorage extends net.minecraft.world.level.chunk.storage.RegionFileStorage {
+ 
 @@ -687,6 +691,12 @@ public class ServerLevel extends Level implements WorldGenLevel {
  
      // Add env and gen to constructor, IWorldDataServer -> WorldDataServer
