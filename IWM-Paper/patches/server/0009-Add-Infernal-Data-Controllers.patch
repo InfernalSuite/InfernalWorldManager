@@ -4,6 +4,31 @@ Date: Tue, 10 Oct 2023 21:07:00 +0100
 Subject: [PATCH] Add Infernal Data Controllers
 
 
+diff --git a/src/main/java/com/infernalsuite/iwm/level/InfernalLevel.java b/src/main/java/com/infernalsuite/iwm/level/InfernalLevel.java
+index 65c00ea7b94b27e8b5e1c2d562e6b394b8428d1d..799c6c3926854b5e5733224bd11ddf847f8a8fe4 100644
+--- a/src/main/java/com/infernalsuite/iwm/level/InfernalLevel.java
++++ b/src/main/java/com/infernalsuite/iwm/level/InfernalLevel.java
+@@ -3,6 +3,9 @@ package com.infernalsuite.iwm.level;
+ import com.google.common.util.concurrent.ThreadFactoryBuilder;
+ import com.infernalsuite.iwm.api.world.properties.WorldProperties;
+ import com.infernalsuite.iwm.api.world.properties.WorldPropertyMap;
++import com.infernalsuite.iwm.level.data.InfernalChunkDataController;
++import com.infernalsuite.iwm.level.data.InfernalEntityDataController;
++import com.infernalsuite.iwm.level.data.InfernalPoiDataController;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.Holder;
+ import net.minecraft.core.registries.Registries;
+@@ -78,6 +81,10 @@ public class InfernalLevel extends ServerLevel {
+         this.pvpMode = propertyMap.getValue(WorldProperties.PVP);
+ 
+         this.keepSpawnInMemory = false;
++
++        this.chunkDataControllerNew = new InfernalChunkDataController(this);
++        this.entityDataControllerNew = new InfernalEntityDataController(this);
++        this.poiDataControllerNew = new InfernalPoiDataController(this);
+     }
+ 
+     @Nullable
 diff --git a/src/main/java/com/infernalsuite/iwm/level/data/InfernalChunkDataController.java b/src/main/java/com/infernalsuite/iwm/level/data/InfernalChunkDataController.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..7fd2e5c002fc82f9c448984f278294a3bd54c71e
