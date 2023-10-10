@@ -1,0 +1,132 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Philip Kelley <philip@thoriumcube.org>
+Date: Tue, 10 Oct 2023 21:07:00 +0100
+Subject: [PATCH] Add Infernal Data Controllers
+
+
+diff --git a/src/main/java/com/infernalsuite/iwm/level/data/InfernalChunkDataController.java b/src/main/java/com/infernalsuite/iwm/level/data/InfernalChunkDataController.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..7fd2e5c002fc82f9c448984f278294a3bd54c71e
+--- /dev/null
++++ b/src/main/java/com/infernalsuite/iwm/level/data/InfernalChunkDataController.java
+@@ -0,0 +1,38 @@
++package com.infernalsuite.iwm.level.data;
++
++import com.infernalsuite.iwm.level.InfernalLevel;
++import io.papermc.paper.chunk.system.io.RegionFileIOThread;
++import net.minecraft.nbt.CompoundTag;
++import net.minecraft.world.level.chunk.storage.RegionFileStorage;
++
++import java.io.IOException;
++
++public class InfernalChunkDataController extends RegionFileIOThread.ChunkDataController {
++
++    private final InfernalLevel infernalLevel;
++
++    public InfernalChunkDataController(InfernalLevel infernalLevel) {
++        super(RegionFileIOThread.RegionFileType.CHUNK_DATA);
++        this.infernalLevel = infernalLevel;
++    }
++
++    @Override
++    public RegionFileStorage getCache() {
++        // TODO - Check this
++        return this.infernalLevel.getChunkSource().chunkMap.regionFileCache;
++    }
++
++    @Override
++    public void writeData(int chunkX, int chunkZ, CompoundTag compound) throws IOException {
++        if (!RegionFileIOThread.isRegionFileThread()) {
++            RegionFileIOThread.scheduleSave(this.infernalLevel, chunkX, chunkZ, compound, RegionFileIOThread.RegionFileType.CHUNK_DATA);
++        }
++        this.infernalLevel.infernalWorld.saveChunkData(chunkX, chunkZ, compound);
++    }
++
++    @Override
++    public CompoundTag readData(int chunkX, int chunkZ) throws IOException {
++        return this.infernalLevel.infernalWorld.readChunkData(chunkX, chunkZ);
++    }
++
++}
+diff --git a/src/main/java/com/infernalsuite/iwm/level/data/InfernalEntityDataController.java b/src/main/java/com/infernalsuite/iwm/level/data/InfernalEntityDataController.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..602f608f2a8aab1f36e3cc8985ef22548b141e41
+--- /dev/null
++++ b/src/main/java/com/infernalsuite/iwm/level/data/InfernalEntityDataController.java
+@@ -0,0 +1,35 @@
++package com.infernalsuite.iwm.level.data;
++
++import com.infernalsuite.iwm.level.InfernalLevel;
++import io.papermc.paper.chunk.system.io.RegionFileIOThread;
++import net.minecraft.nbt.CompoundTag;
++import net.minecraft.world.level.chunk.storage.RegionFileStorage;
++
++import java.io.IOException;
++
++public class InfernalEntityDataController extends RegionFileIOThread.ChunkDataController {
++
++    private final InfernalLevel infernalLevel;
++
++    public InfernalEntityDataController(InfernalLevel infernalLevel) {
++        super(RegionFileIOThread.RegionFileType.ENTITY_DATA);
++        this.infernalLevel = infernalLevel;
++    }
++
++    @Override
++    public RegionFileStorage getCache() {
++        // TODO - Check this
++        return this.infernalLevel.entityStorage;
++    }
++
++    @Override
++    public void writeData(int chunkX, int chunkZ, CompoundTag compound) throws IOException {
++        this.infernalLevel.infernalWorld.saveEntityChunkData(chunkX, chunkZ, compound);
++    }
++
++    @Override
++    public CompoundTag readData(int chunkX, int chunkZ) throws IOException {
++        return this.infernalLevel.infernalWorld.readEntityChunkData(chunkX, chunkZ);
++    }
++
++}
+diff --git a/src/main/java/com/infernalsuite/iwm/level/data/InfernalPoiDataController.java b/src/main/java/com/infernalsuite/iwm/level/data/InfernalPoiDataController.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..9e74d95102f2c2721a13680bbe914ee7a303c64c
+--- /dev/null
++++ b/src/main/java/com/infernalsuite/iwm/level/data/InfernalPoiDataController.java
+@@ -0,0 +1,35 @@
++package com.infernalsuite.iwm.level.data;
++
++import com.infernalsuite.iwm.level.InfernalLevel;
++import io.papermc.paper.chunk.system.io.RegionFileIOThread;
++import net.minecraft.nbt.CompoundTag;
++import net.minecraft.world.level.chunk.storage.RegionFileStorage;
++
++import java.io.IOException;
++
++public class InfernalPoiDataController extends RegionFileIOThread.ChunkDataController {
++
++    private final InfernalLevel infernalLevel;
++
++    public InfernalPoiDataController(InfernalLevel infernalLevel) {
++        super(RegionFileIOThread.RegionFileType.POI_DATA);
++        this.infernalLevel = infernalLevel;
++    }
++
++    @Override
++    public RegionFileStorage getCache() {
++        // TODO - Check this
++        return this.infernalLevel.getChunkSource().getPoiManager();
++    }
++
++    @Override
++    public void writeData(int chunkX, int chunkZ, CompoundTag compound) throws IOException {
++        this.infernalLevel.infernalWorld.savePoiChunkData(chunkX, chunkZ, compound);
++    }
++
++    @Override
++    public CompoundTag readData(int chunkX, int chunkZ) throws IOException {
++        return this.infernalLevel.infernalWorld.readPoiChunkData(chunkX, chunkZ);
++    }
++
++}
