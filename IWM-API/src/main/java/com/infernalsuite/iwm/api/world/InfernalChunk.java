@@ -69,7 +69,7 @@ public interface InfernalChunk {
     /**
      * Gets all entities of the chunk.
      *
-     * @return a list of {@link NBTCompound}s containing all the entities of the cxhunk
+     * @return a list of {@link NBTCompound}s containing all the entities of the chunk
      */
     @NonNull List<NBTCompound> getEntities();
 
