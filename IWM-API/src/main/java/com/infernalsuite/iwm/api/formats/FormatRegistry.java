@@ -5,6 +5,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 /**
  * Registry for available formats within this IWM instance.
@@ -25,6 +26,15 @@ public interface FormatRegistry {
      * @return an {@link Optional} containing the format, or {@link Optional#empty()} if no registered format matches the given name
      */
     @NonNull CompletableFuture<Optional<Format>> getFormat(@NonNull String formatName);
+
+    /**
+     * Gets a {@link Format} by its registered name.
+     *
+     * @param formatName the name of the format to retrieve
+     * @param executor the {@link Executor} to run the operation on
+     * @return an {@link Optional} containing the format, or {@link Optional#empty()} if no registered format matches the given name
+     */
+    @NonNull CompletableFuture<Optional<Format>> getFormat(@NonNull String formatName, Executor executor);
 
     /**
      * Unregister the given {@link Format} from the {@link FormatRegistry registry}
