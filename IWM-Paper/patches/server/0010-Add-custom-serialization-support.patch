@@ -4,42 +4,146 @@ Date: Tue, 10 Oct 2023 22:40:37 +0100
 Subject: [PATCH] Add custom serialization support
 
 
+diff --git a/src/main/java/io/papermc/paper/chunk/system/poi/PoiChunk.java b/src/main/java/io/papermc/paper/chunk/system/poi/PoiChunk.java
+index d72041aa814ff179e6e29a45dcd359a91d426d47..9b34a400b376e0478a35621388ff69d0b3e2dc8b 100644
+--- a/src/main/java/io/papermc/paper/chunk/system/poi/PoiChunk.java
++++ b/src/main/java/io/papermc/paper/chunk/system/poi/PoiChunk.java
+@@ -1,5 +1,6 @@
+ package io.papermc.paper.chunk.system.poi;
+ 
++import com.infernalsuite.iwm.level.InfernalLevel;
+ import com.mojang.logging.LogUtils;
+ import com.mojang.serialization.Codec;
+ import com.mojang.serialization.DataResult;
+@@ -121,7 +122,11 @@ public final class PoiChunk {
+         final CompoundTag sections = new CompoundTag();
+         ret.put("Sections", sections);
+ 
+-        ret.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
++        // IWM Start - we don't need the data version, we already know it :D
++        if (!(this.world instanceof InfernalLevel)) {
++            ret.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
++        }
++        // IWM End
+ 
+         final ServerLevel world = this.world;
+         final PoiManager poiManager = world.getPoiManager();
 diff --git a/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java b/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java
-index b66a7d4aab887309579154815a0d4abf9de506b0..3e2d1e2fe973e87a29978df107f5d5e968e02c4d 100644
+index b66a7d4aab887309579154815a0d4abf9de506b0..96f61b93e22acf10aa4c4bf3cb5102011a8dd694 100644
 --- a/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java
 +++ b/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java
-@@ -10,6 +10,12 @@ import com.google.gson.JsonArray;
+@@ -10,6 +10,10 @@ import com.google.gson.JsonArray;
  import com.google.gson.JsonElement;
  import com.google.gson.JsonObject;
  import com.google.gson.JsonPrimitive;
 +import com.infernalsuite.iwm.api.IWMProvider;
 +import com.infernalsuite.iwm.api.InfernalWorldManager;
-+import com.infernalsuite.iwm.api.formats.Format;
 +import com.infernalsuite.iwm.api.formats.FormatRegistry;
-+import com.infernalsuite.iwm.common.api.IWMApi;
 +import com.infernalsuite.iwm.level.InfernalLevel;
  import com.mojang.logging.LogUtils;
  import io.papermc.paper.chunk.system.io.RegionFileIOThread;
  import io.papermc.paper.chunk.system.poi.PoiChunk;
-@@ -1881,6 +1887,21 @@ public final class NewChunkHolder {
-                 }
+@@ -21,6 +25,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
+ import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+ import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
++import net.minecraft.nbt.ByteArrayTag;
+ import net.minecraft.nbt.CompoundTag;
+ import net.minecraft.server.level.ChunkHolder;
+ import net.minecraft.server.level.ChunkLevel;
+@@ -42,6 +47,7 @@ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Objects;
++import java.util.concurrent.CompletableFuture;
+ import java.util.concurrent.atomic.AtomicBoolean;
+ import java.util.function.Consumer;
+ 
+@@ -1851,6 +1857,41 @@ public final class NewChunkHolder {
+         }
+     }
+ 
++    // IWM Start - add custom handling for chunk saving
++    private boolean saveChunk(final ChunkAccess chunk, final InfernalLevel infernalLevel) {
++        try {
++            InfernalWorldManager iwmAPI = IWMProvider.get();
++            FormatRegistry formatRegistry = iwmAPI.getFormatRegistry();
++            String formatName = infernalLevel.infernalWorld.getFormatName();
++            CompletableFuture<byte[]> serializedFuture = formatRegistry.getFormat(formatName).thenApply(optFormat -> optFormat.orElseThrow(() -> {
++                String errorMessage = "Format '" + formatName + "' for world '" + infernalLevel.infernalWorld.getName()
++                        + "' was not present in the FormatRegistry!";
++                return new IllegalStateException(errorMessage);
++            }).serializeChunk(infernalLevel.infernalWorld.getChunks().get(CoordinateUtils.getChunkKey(chunk.getPos()))));
++            final PrioritisedExecutor.PrioritisedTask task = this.scheduler.loadExecutor.createTask(() -> {
++                try {
++                    CompoundTag serializedChunkTag = new CompoundTag();
++                    serializedChunkTag.put("Serialized", new ByteArrayTag(serializedFuture.join()));
++                    NewChunkHolder.this.completeAsyncChunkDataSave(serializedChunkTag);
++                } catch (final ThreadDeath death) {
++                    throw death;
++                } catch (final Throwable throwable) {
++                    LOGGER.error("Failed to serialize chunk " + chunk.getPos() + " for world " + this.world.serverLevelData.getLevelName(), throwable);
++                }
++            });
++            this.chunkDataUnload.task().setTask(task);
++            task.queue();
++            chunk.setUnsaved(false);
++        } catch (final ThreadDeath death) {
++            throw death;
++        } catch (final Throwable throwable) {
++            LOGGER.error("Failed to save chunk data (" + this.chunkX + "," + this.chunkZ + ") in world '" + this.world.getWorld().getName() + "'");
++            this.completeAsyncChunkDataSave(null);
++        }
++        return true;
++    }
++    // IWM End
++
+     private boolean saveChunk(final ChunkAccess chunk, final boolean unloading) {
+         if (!chunk.isUnsaved()) {
+             if (unloading) {
+@@ -1859,6 +1900,7 @@ public final class NewChunkHolder {
+             return false;
+         }
+         boolean completing = false;
++        if (this.world instanceof InfernalLevel infernalLevel) return saveChunk(chunk, infernalLevel); // IWM - Custom save handling
+         try {
+             if (unloading) {
+                 try {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/EntityStorage.java b/src/main/java/net/minecraft/world/level/chunk/storage/EntityStorage.java
+index 060e064625969610539dbf969ce773b877a7c579..d18029c19b1666806d676cce4daba392143415cb 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/EntityStorage.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/EntityStorage.java
+@@ -1,6 +1,7 @@
+ package net.minecraft.world.level.chunk.storage;
+ 
+ import com.google.common.collect.ImmutableList;
++import com.infernalsuite.iwm.level.InfernalLevel;
+ import com.mojang.datafixers.DataFixer;
+ import com.mojang.logging.LogUtils;
+ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+@@ -128,12 +129,24 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
              }
  
-+            // IWM Start - Custom Serialization
-+            if (this.world instanceof InfernalLevel infernalLevel) {
-+                InfernalWorldManager iwmAPI = IWMProvider.get();
-+                FormatRegistry formatRegistry = iwmAPI.getFormatRegistry();
-+                String formatName = infernalLevel.infernalWorld.getFormatName();
-+                formatRegistry.getFormat(formatName).thenAccept(optFormat -> optFormat.ifPresentOrElse(format -> {
-+                    // TODO: Rework format and serialization wrappers
-+                }, () -> {
-+                    String errorMessage = "Format '" + formatName + "' for world '" + infernalLevel.infernalWorld.getName()
-+                            + "' was not present in the FormatRegistry!";
-+                    throw new IllegalStateException(errorMessage);
-+                }));
-+            }
-+            // IWM End
+         });
 +
-             final CompoundTag save = ChunkSerializer.saveChunk(this.world, chunk, null);
++        // IWM Start - We only care about the actual entities list
++
++        if (!force && listTag.isEmpty()) return null; // Short circuit null return if no entities
++
++        if (level instanceof InfernalLevel) {
++            CompoundTag ret = new CompoundTag();
++            ret.put("Entities", listTag);
++            return ret;
++        }
++
+         CompoundTag compoundTag = NbtUtils.addCurrentDataVersion(new CompoundTag());
+         compoundTag.put("Entities", listTag);
+         writeChunkPos(compoundTag, chunkPos);
+         // Paper - remove worker usage
  
-             if (unloading) {
+-        return !force && listTag.isEmpty() ? null : compoundTag;
++        return compoundTag; // null return case handled with previous short circuit
++        // IWM End
+     }
+     // Paper end - rewrite chunk system
+ 
