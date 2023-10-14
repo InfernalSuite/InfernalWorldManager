@@ -1,5 +1,6 @@
 package com.infernalsuite.iwm.api.formats;
 
+import com.infernalsuite.iwm.api.world.InfernalChunk;
 import com.infernalsuite.iwm.api.world.InfernalWorld;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -34,6 +35,22 @@ public interface Format {
      * @return the {@link InfernalWorld deserialized world}
      */
     @NonNull InfernalWorld deserialize(@NonNull SerializedDataWrapper serializedWorld) throws IOException;
+
+    /**
+     * Serializes an {@link InfernalChunk} into a byte array in this format.
+     *
+     * @param chunk the chunk to serialize
+     * @return the serialized chunk as a byte array
+     */
+    byte[] serializeChunk(@NonNull InfernalChunk chunk);
+
+    /**
+     * Deserializes a byte array into an {@link InfernalChunk} in this format.
+     *
+     * @param serialized the byte array to deserialize
+     * @return the {@link InfernalChunk deserialized chunk}
+     */
+    InfernalChunk deserializeChunk(byte[] serialized);
 
     /**
      * Constructs a {@link SerializedDataWrapper} from the given Input Stream.
