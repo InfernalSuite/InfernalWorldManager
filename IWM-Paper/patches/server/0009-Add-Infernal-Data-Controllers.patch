@@ -31,10 +31,10 @@ index 65c00ea7b94b27e8b5e1c2d562e6b394b8428d1d..799c6c3926854b5e5733224bd11ddf84
      @Nullable
 diff --git a/src/main/java/com/infernalsuite/iwm/level/data/InfernalChunkDataController.java b/src/main/java/com/infernalsuite/iwm/level/data/InfernalChunkDataController.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7fd2e5c002fc82f9c448984f278294a3bd54c71e
+index 0000000000000000000000000000000000000000..8651b7b25dc99e4c8a9268366333e7ab110ddeda
 --- /dev/null
 +++ b/src/main/java/com/infernalsuite/iwm/level/data/InfernalChunkDataController.java
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,43 @@
 +package com.infernalsuite.iwm.level.data;
 +
 +import com.infernalsuite.iwm.level.InfernalLevel;
@@ -63,22 +63,27 @@ index 0000000000000000000000000000000000000000..7fd2e5c002fc82f9c448984f278294a3
 +    public void writeData(int chunkX, int chunkZ, CompoundTag compound) throws IOException {
 +        if (!RegionFileIOThread.isRegionFileThread()) {
 +            RegionFileIOThread.scheduleSave(this.infernalLevel, chunkX, chunkZ, compound, RegionFileIOThread.RegionFileType.CHUNK_DATA);
++            return;
 +        }
 +        this.infernalLevel.infernalWorld.saveChunkData(chunkX, chunkZ, compound);
 +    }
 +
 +    @Override
 +    public CompoundTag readData(int chunkX, int chunkZ) throws IOException {
++        if (!RegionFileIOThread.isRegionFileThread()) {
++            return RegionFileIOThread.loadData(this.infernalLevel, chunkX, chunkZ, RegionFileIOThread.RegionFileType.CHUNK_DATA,
++                    RegionFileIOThread.getIOBlockingPriorityForCurrentThread());
++        }
 +        return this.infernalLevel.infernalWorld.readChunkData(chunkX, chunkZ);
 +    }
 +
 +}
 diff --git a/src/main/java/com/infernalsuite/iwm/level/data/InfernalEntityDataController.java b/src/main/java/com/infernalsuite/iwm/level/data/InfernalEntityDataController.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..602f608f2a8aab1f36e3cc8985ef22548b141e41
+index 0000000000000000000000000000000000000000..fb6d1351e531823dbed7a73a29469866fc4bcbc2
 --- /dev/null
 +++ b/src/main/java/com/infernalsuite/iwm/level/data/InfernalEntityDataController.java
-@@ -0,0 +1,35 @@
+@@ -0,0 +1,43 @@
 +package com.infernalsuite.iwm.level.data;
 +
 +import com.infernalsuite.iwm.level.InfernalLevel;
@@ -105,21 +110,29 @@ index 0000000000000000000000000000000000000000..602f608f2a8aab1f36e3cc8985ef2254
 +
 +    @Override
 +    public void writeData(int chunkX, int chunkZ, CompoundTag compound) throws IOException {
++        if (!RegionFileIOThread.isRegionFileThread()) {
++            RegionFileIOThread.scheduleSave(this.infernalLevel, chunkX, chunkZ, compound, RegionFileIOThread.RegionFileType.ENTITY_DATA);
++            return;
++        }
 +        this.infernalLevel.infernalWorld.saveEntityChunkData(chunkX, chunkZ, compound);
 +    }
 +
 +    @Override
 +    public CompoundTag readData(int chunkX, int chunkZ) throws IOException {
++        if (!RegionFileIOThread.isRegionFileThread()) {
++            return RegionFileIOThread.loadData(this.infernalLevel, chunkX, chunkZ, RegionFileIOThread.RegionFileType.ENTITY_DATA,
++                    RegionFileIOThread.getIOBlockingPriorityForCurrentThread());
++        }
 +        return this.infernalLevel.infernalWorld.readEntityChunkData(chunkX, chunkZ);
 +    }
 +
 +}
 diff --git a/src/main/java/com/infernalsuite/iwm/level/data/InfernalPoiDataController.java b/src/main/java/com/infernalsuite/iwm/level/data/InfernalPoiDataController.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9e74d95102f2c2721a13680bbe914ee7a303c64c
+index 0000000000000000000000000000000000000000..2b118cd9f71e1754f61e88eb815872b6574510bc
 --- /dev/null
 +++ b/src/main/java/com/infernalsuite/iwm/level/data/InfernalPoiDataController.java
-@@ -0,0 +1,35 @@
+@@ -0,0 +1,43 @@
 +package com.infernalsuite.iwm.level.data;
 +
 +import com.infernalsuite.iwm.level.InfernalLevel;
@@ -146,11 +159,19 @@ index 0000000000000000000000000000000000000000..9e74d95102f2c2721a13680bbe914ee7
 +
 +    @Override
 +    public void writeData(int chunkX, int chunkZ, CompoundTag compound) throws IOException {
++        if (!RegionFileIOThread.isRegionFileThread()) {
++            RegionFileIOThread.scheduleSave(this.infernalLevel, chunkX, chunkZ, compound, RegionFileIOThread.RegionFileType.POI_DATA);
++            return;
++        }
 +        this.infernalLevel.infernalWorld.savePoiChunkData(chunkX, chunkZ, compound);
 +    }
 +
 +    @Override
 +    public CompoundTag readData(int chunkX, int chunkZ) throws IOException {
++        if (!RegionFileIOThread.isRegionFileThread()) {
++            return RegionFileIOThread.loadData(this.infernalLevel, chunkX, chunkZ, RegionFileIOThread.RegionFileType.POI_DATA,
++                    RegionFileIOThread.getIOBlockingPriorityForCurrentThread());
++        }
 +        return this.infernalLevel.infernalWorld.readPoiChunkData(chunkX, chunkZ);
 +    }
 +
