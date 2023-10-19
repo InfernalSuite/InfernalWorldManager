@@ -1,0 +1,164 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Philip Kelley <philip@thoriumcube.org>
+Date: Mon, 16 Oct 2023 12:24:29 +0100
+Subject: [PATCH] Add InfernalChunkConverter
+
+
+diff --git a/src/main/java/com/infernalsuite/iwm/level/InfernalChunkConverter.java b/src/main/java/com/infernalsuite/iwm/level/InfernalChunkConverter.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..e047fde66e6944f9acd2f19a14095972608ef409
+--- /dev/null
++++ b/src/main/java/com/infernalsuite/iwm/level/InfernalChunkConverter.java
+@@ -0,0 +1,152 @@
++package com.infernalsuite.iwm.level;
++
++import ca.spottedleaf.starlight.common.light.SWMRNibbleArray;
++import ca.spottedleaf.starlight.common.light.StarLightEngine;
++import com.infernalsuite.iwm.Converter;
++import com.infernalsuite.iwm.api.utils.NibbleArray;
++import com.infernalsuite.iwm.api.world.InfernalChunk;
++import com.infernalsuite.iwm.api.world.InfernalChunkSection;
++import com.mojang.logging.LogUtils;
++import com.mojang.serialization.Codec;
++import com.mojang.serialization.DataResult;
++import net.minecraft.core.BlockPos;
++import net.minecraft.core.Holder;
++import net.minecraft.core.Registry;
++import net.minecraft.core.registries.Registries;
++import net.minecraft.nbt.CompoundTag;
++import net.minecraft.nbt.NbtOps;
++import net.minecraft.world.level.ChunkPos;
++import net.minecraft.world.level.biome.Biome;
++import net.minecraft.world.level.biome.Biomes;
++import net.minecraft.world.level.block.Block;
++import net.minecraft.world.level.block.Blocks;
++import net.minecraft.world.level.block.entity.BlockEntity;
++import net.minecraft.world.level.block.state.BlockState;
++import net.minecraft.world.level.chunk.LevelChunk;
++import net.minecraft.world.level.chunk.LevelChunkSection;
++import net.minecraft.world.level.chunk.PalettedContainer;
++import net.minecraft.world.level.chunk.UpgradeData;
++import net.minecraft.world.level.chunk.storage.ChunkSerializer;
++import net.minecraft.world.level.levelgen.Heightmap;
++import net.minecraft.world.level.material.Fluid;
++import net.minecraft.world.ticks.LevelChunkTicks;
++import org.jglrxavpok.hephaistos.collections.ImmutableLongArray;
++import org.jglrxavpok.hephaistos.nbt.NBTCompound;
++import org.slf4j.Logger;
++
++import java.util.EnumSet;
++import java.util.Objects;
++
++public final class InfernalChunkConverter {
++
++    private static final Logger LOGGER = LogUtils.getClassLogger();
++
++    static LevelChunk convertInfernalChunk(InfernalLevel level, InfernalChunk chunk) {
++        ChunkPos chunkPos = new ChunkPos(chunk.getX(), chunk.getZ());
++
++        LevelChunkSection[] sections = new LevelChunkSection[level.getSectionsCount()];
++
++        SWMRNibbleArray[] blockNibbles = StarLightEngine.getFilledEmptyLight(level);
++        SWMRNibbleArray[] skyNibbles = StarLightEngine.getFilledEmptyLight(level);
++        level.getServer().scheduleOnMain(() -> {
++            level.getLightEngine().retainData(chunkPos, true);
++        });
++
++        Registry<Biome> biomeRegistry = level.registryAccess().registryOrThrow(Registries.BIOME);
++
++        Codec<PalettedContainer< Holder<Biome>>> biomeCodec = PalettedContainer.codecRW(biomeRegistry.asHolderIdMap(), biomeRegistry.holderByNameCodec(),
++                PalettedContainer.Strategy.SECTION_BIOMES, biomeRegistry.getHolderOrThrow(Biomes.PLAINS), null);
++
++        for (int sectionId = 0; sectionId < chunk.getSections().length; sectionId++) {
++            InfernalChunkSection infernalChunkSection = chunk.getSections()[sectionId];
++
++            if (infernalChunkSection != null) {
++                NibbleArray blockLight = infernalChunkSection.getBlockLight();
++                if (blockLight != null) {
++                    blockNibbles[sectionId] = new SWMRNibbleArray(blockLight.getBackingArray());
++                }
++
++                NibbleArray skyLight = infernalChunkSection.getSkyLight();
++                if (skyLight != null) {
++                    skyNibbles[sectionId] = new SWMRNibbleArray(skyLight.getBackingArray());
++                }
++
++                PalettedContainer<BlockState> blockPalette;
++                if (infernalChunkSection.getBlockStatesTag() != null) {
++                    DataResult<PalettedContainer<BlockState>> dataResult = ChunkSerializer.BLOCK_STATE_CODEC.parse(
++                            NbtOps.INSTANCE, Converter.convertToTag(infernalChunkSection.getBlockStatesTag())).promotePartial(s -> {
++                                LOGGER.error("Recoverable error when parsing section {},{}: {}", chunkPos.x, chunkPos.z, s);
++                    });
++                    blockPalette = dataResult.getOrThrow(false, LOGGER::error);
++                } else {
++                    blockPalette = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(),
++                            PalettedContainer.Strategy.SECTION_STATES, null);
++                }
++
++                PalettedContainer<Holder<Biome>> biomePalette;
++
++                if (infernalChunkSection.getBiomeTag() != null) {
++                    DataResult<PalettedContainer<Holder<Biome>>> dataResult = biomeCodec.parse(NbtOps.INSTANCE,
++                            Converter.convertToTag(infernalChunkSection.getBiomeTag())).promotePartial(s -> {
++                                LOGGER.error("Recoverable error when parsing section {},{}: {}", chunkPos.x, chunkPos.z, s);
++                    });
++                    biomePalette = dataResult.getOrThrow(false, LOGGER::error);
++                } else {
++                    biomePalette = new PalettedContainer<>(biomeRegistry.asHolderIdMap(), biomeRegistry.getHolderOrThrow(Biomes.PLAINS),
++                            PalettedContainer.Strategy.SECTION_BIOMES, null);
++                }
++
++                if (sectionId < sections.length) {
++                    sections[sectionId] = new LevelChunkSection(blockPalette, biomePalette);
++                }
++            }
++        }
++
++        LevelChunk.PostLoadProcessor tileEntityLoader = levelChunk -> {
++            if (chunk.getTileEntities() != null) {
++                chunk.getTileEntities().forEach(tileEntityNbt -> {
++                    String type = tileEntityNbt.getString("id");
++                    if (type != null) {
++                        try {
++                            BlockPos blockPos = new BlockPos(tileEntityNbt.getInt("x"), tileEntityNbt.getInt("y"), tileEntityNbt.getInt("z"));
++                            BlockState blockData = levelChunk.getBlockState(blockPos);
++                            BlockEntity blockEntity = BlockEntity.loadStatic(blockPos, blockData, (CompoundTag) Objects.requireNonNull(Converter.convertToTag(tileEntityNbt)));
++                            if (blockEntity != null) levelChunk.setBlockEntity(blockEntity);
++                        } catch (final NullPointerException e) {
++                            LOGGER.error("Unexpected null value encountered while loading tile entities for chunk {},{}", chunkPos.x, chunkPos.z, e);
++                        }
++                    }
++                });
++            }
++        };
++
++        LevelChunkTicks<Block> blockLevelChunkTicks = new LevelChunkTicks<>();
++        LevelChunkTicks<Fluid> fluidLevelChunkTicks = new LevelChunkTicks<>();
++        LevelChunk levelChunk = new LevelChunk(level, chunkPos, UpgradeData.EMPTY, blockLevelChunkTicks, fluidLevelChunkTicks, 0L, sections, tileEntityLoader, null);
++
++        EnumSet<Heightmap.Types> heightMapTypes = levelChunk.getStatus().heightmapsAfter();
++        NBTCompound heightMaps = chunk.getHeightMaps();
++        EnumSet<Heightmap.Types> unsetHeightMaps = EnumSet.noneOf(Heightmap.Types.class);
++
++        levelChunk.setBlockNibbles(blockNibbles);
++        levelChunk.setSkyNibbles(skyNibbles);
++
++        for (Heightmap.Types type : heightMapTypes) {
++            String name = type.getSerializedName();
++
++            if (heightMaps.containsKey(name)) {
++                ImmutableLongArray heightMap = heightMaps.getLongArray(name);
++                levelChunk.setHeightmap(type, heightMap.copyArray());
++            } else {
++                unsetHeightMaps.add(type);
++            }
++        }
++
++        if (!unsetHeightMaps.isEmpty()) {
++            Heightmap.primeHeightmaps(levelChunk, unsetHeightMaps);
++        }
++
++        return levelChunk;
++    }
++
++}
