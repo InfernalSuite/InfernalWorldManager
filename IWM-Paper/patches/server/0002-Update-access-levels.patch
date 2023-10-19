@@ -4,6 +4,19 @@ Date: Fri, 6 Oct 2023 23:01:43 +0100
 Subject: [PATCH] Update access levels
 
 
+diff --git a/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkTaskScheduler.java b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkTaskScheduler.java
+index f975cb93716e137d973ff2f9011acdbef58859a2..fd88cb36c635ea2390ea94a8b726d5b0875dd7fd 100644
+--- a/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkTaskScheduler.java
++++ b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkTaskScheduler.java
+@@ -249,7 +249,7 @@ public final class ChunkTaskScheduler {
+         return (status.ordinal() - 1) + getAccessRadius(ChunkStatus.FULL);
+     }
+ 
+-    final ReentrantAreaLock schedulingLockArea = new ReentrantAreaLock(getChunkSystemLockShift());
++    public final ReentrantAreaLock schedulingLockArea = new ReentrantAreaLock(getChunkSystemLockShift()); // IWM - package-private -> public
+     // Folia end - use area based lock to reduce contention
+ 
+     public ChunkTaskScheduler(final ServerLevel world, final PrioritisedThreadPool workers) {
 diff --git a/src/main/java/io/papermc/paper/world/ChunkEntitySlices.java b/src/main/java/io/papermc/paper/world/ChunkEntitySlices.java
 index 7e8dc9e8f381abfdcce2746edc93122d623622d1..6225e3b18ff17320a63ad54248e11a4326e61574 100644
 --- a/src/main/java/io/papermc/paper/world/ChunkEntitySlices.java
