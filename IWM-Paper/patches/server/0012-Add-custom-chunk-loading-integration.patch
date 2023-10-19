@@ -1,12 +1,12 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Philip Kelley <philip@thoriumcube.org>
 Date: Thu, 19 Oct 2023 09:05:05 +0100
-Subject: [PATCH] Add custom chunk load task for IWM
+Subject: [PATCH] Add custom chunk loading integration
 
 
 diff --git a/src/main/java/com/infernalsuite/iwm/level/IWMChunkLoadTask.java b/src/main/java/com/infernalsuite/iwm/level/IWMChunkLoadTask.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..93bd098e117f1abe1c484fd692ee8bc4a2e0013c
+index 0000000000000000000000000000000000000000..61ea80bf52682016e55c04e3b7c483df4a59d945
 --- /dev/null
 +++ b/src/main/java/com/infernalsuite/iwm/level/IWMChunkLoadTask.java
 @@ -0,0 +1,418 @@
@@ -153,10 +153,10 @@ index 0000000000000000000000000000000000000000..93bd098e117f1abe1c484fd692ee8bc4
 +
 +    @Override
 +    public void lowerPriority(PrioritisedExecutor.Priority priority) {
-+        final ChunkLoadTask.EntityDataLoadTask entityDataLoadTask = this.chunkHolder.getEntityDataLoadTask();
++        final ChunkLoadTask.IEntityDataLoadTask entityDataLoadTask = this.chunkHolder.getEntityDataLoadTask();
 +        if (entityDataLoadTask != null) entityDataLoadTask.lowerPriority(priority);
 +
-+        final ChunkLoadTask.PoiDataLoadTask poiDataLoadTask = this.chunkHolder.getPoiDataLoadTask();
++        final ChunkLoadTask.IPoiDataLoadTask poiDataLoadTask = this.chunkHolder.getPoiDataLoadTask();
 +        if (poiDataLoadTask != null) poiDataLoadTask.lowerPriority(priority);
 +
 +        this.loadTask.lowerPriority(priority);
@@ -164,10 +164,10 @@ index 0000000000000000000000000000000000000000..93bd098e117f1abe1c484fd692ee8bc4
 +
 +    @Override
 +    public void setPriority(PrioritisedExecutor.Priority priority) {
-+        final ChunkLoadTask.EntityDataLoadTask entityDataLoadTask = this.chunkHolder.getEntityDataLoadTask();
++        final ChunkLoadTask.IEntityDataLoadTask entityDataLoadTask = this.chunkHolder.getEntityDataLoadTask();
 +        if (entityDataLoadTask != null) entityDataLoadTask.setPriority(priority);
 +
-+        final ChunkLoadTask.PoiDataLoadTask poiDataLoadTask = this.chunkHolder.getPoiDataLoadTask();
++        final ChunkLoadTask.IPoiDataLoadTask poiDataLoadTask = this.chunkHolder.getPoiDataLoadTask();
 +        if (poiDataLoadTask != null) poiDataLoadTask.setPriority(priority);
 +
 +        this.loadTask.setPriority(priority);
@@ -175,10 +175,10 @@ index 0000000000000000000000000000000000000000..93bd098e117f1abe1c484fd692ee8bc4
 +
 +    @Override
 +    public void raisePriority(PrioritisedExecutor.Priority priority) {
-+        final ChunkLoadTask.EntityDataLoadTask entityDataLoadTask = this.chunkHolder.getEntityDataLoadTask();
++        final ChunkLoadTask.IEntityDataLoadTask entityDataLoadTask = this.chunkHolder.getEntityDataLoadTask();
 +        if (entityDataLoadTask != null) entityDataLoadTask.raisePriority(priority);
 +
-+        final ChunkLoadTask.PoiDataLoadTask poiDataLoadTask = this.chunkHolder.getPoiDataLoadTask();
++        final ChunkLoadTask.IPoiDataLoadTask poiDataLoadTask = this.chunkHolder.getPoiDataLoadTask();
 +        if (poiDataLoadTask != null) poiDataLoadTask.raisePriority(priority);
 +
 +        this.loadTask.raisePriority(priority);
@@ -234,7 +234,7 @@ index 0000000000000000000000000000000000000000..93bd098e117f1abe1c484fd692ee8bc4
 +        }
 +    }
 +
-+    public static final class ChunkDataLoadTask extends CallbackDataLoadTask<ChunkAccess, ChunkAccess> {
++    public static final class ChunkDataLoadTask extends CallbackDataLoadTask<ChunkAccess, ChunkAccess> implements ChunkLoadTask.IChunkDataLoadTask {
 +
 +        private final InfernalLevel level;
 +
@@ -311,7 +311,7 @@ index 0000000000000000000000000000000000000000..93bd098e117f1abe1c484fd692ee8bc4
 +        }
 +    }
 +
-+    public static final class PoiDataLoadTask extends CallbackDataLoadTask<PoiChunk, PoiChunk> {
++    public static final class PoiDataLoadTask extends CallbackDataLoadTask<PoiChunk, PoiChunk> implements ChunkLoadTask.IPoiDataLoadTask {
 +        public PoiDataLoadTask(final ChunkTaskScheduler scheduler, final InfernalLevel level, final int chunkX,
 +                               final int chunkZ, final PrioritisedExecutor.Priority priority) {
 +            super(scheduler, level, chunkX, chunkZ, RegionFileIOThread.RegionFileType.POI_DATA, priority);
@@ -369,7 +369,7 @@ index 0000000000000000000000000000000000000000..93bd098e117f1abe1c484fd692ee8bc4
 +        }
 +    }
 +
-+    public static final class EntityDataLoadTask extends CallbackDataLoadTask<CompoundTag, CompoundTag> {
++    public static final class EntityDataLoadTask extends CallbackDataLoadTask<CompoundTag, CompoundTag> implements ChunkLoadTask.IEntityDataLoadTask {
 +        public EntityDataLoadTask(final ChunkTaskScheduler scheduler, final InfernalLevel level, final int chunkX,
 +                                  final int chunkZ, final PrioritisedExecutor.Priority priority) {
 +            super(scheduler, level, chunkX, chunkZ, RegionFileIOThread.RegionFileType.ENTITY_DATA, priority);
@@ -428,3 +428,301 @@ index 0000000000000000000000000000000000000000..93bd098e117f1abe1c484fd692ee8bc4
 +    }
 +
 +}
+diff --git a/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkHolderManager.java b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkHolderManager.java
+index abd0217cf0bff183c8e262edc173a53403797c1a..e8fe3e01890613ea54250d7b031fc72e0fd00f28 100644
+--- a/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkHolderManager.java
++++ b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkHolderManager.java
+@@ -890,7 +890,7 @@ public final class ChunkHolderManager {
+                             LockSupport.unpark(waiter);
+                         }
+                     });
+-                    final ChunkLoadTask.EntityDataLoadTask entityLoad = current.getEntityDataLoadTask();
++                    final ChunkLoadTask.IEntityDataLoadTask entityLoad = current.getEntityDataLoadTask(); // IWM - IEntityDataLoadTask
+ 
+                     if (entityLoad != null && !transientChunk) {
+                         entityLoad.raisePriority(PrioritisedExecutor.Priority.BLOCKING);
+@@ -978,7 +978,7 @@ public final class ChunkHolderManager {
+                     isCompleted.set(true);
+                     LockSupport.unpark(waiter);
+                 });
+-                final ChunkLoadTask.PoiDataLoadTask poiLoad = current.getPoiDataLoadTask();
++                final ChunkLoadTask.IPoiDataLoadTask poiLoad = current.getPoiDataLoadTask(); // IWM - IPoiDataLoadTask
+ 
+                 if (poiLoad != null) {
+                     poiLoad.raisePriority(PrioritisedExecutor.Priority.BLOCKING);
+diff --git a/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkLoadTask.java b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkLoadTask.java
+index e7fb084ddb88ab62f1d493a999cc82b9258d275e..81a953444604455092a60deb8dd8a5a590e278ad 100644
+--- a/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkLoadTask.java
++++ b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkLoadTask.java
+@@ -174,12 +174,12 @@ public final class ChunkLoadTask extends ChunkProgressionTask {
+ 
+     @Override
+     public void lowerPriority(final PrioritisedExecutor.Priority priority) {
+-        final EntityDataLoadTask entityLoad = this.chunkHolder.getEntityDataLoadTask();
++        final IEntityDataLoadTask entityLoad = this.chunkHolder.getEntityDataLoadTask(); // IWM - IEntityDataLoadTask
+         if (entityLoad != null) {
+             entityLoad.lowerPriority(priority);
+         }
+ 
+-        final PoiDataLoadTask poiLoad = this.chunkHolder.getPoiDataLoadTask();
++        final IPoiDataLoadTask poiLoad = this.chunkHolder.getPoiDataLoadTask(); // IWM - IPoiDataLoadTask
+ 
+         if (poiLoad != null) {
+             poiLoad.lowerPriority(priority);
+@@ -190,12 +190,12 @@ public final class ChunkLoadTask extends ChunkProgressionTask {
+ 
+     @Override
+     public void setPriority(final PrioritisedExecutor.Priority priority) {
+-        final EntityDataLoadTask entityLoad = this.chunkHolder.getEntityDataLoadTask();
++        final IEntityDataLoadTask entityLoad = this.chunkHolder.getEntityDataLoadTask(); // IWM - IEntityDataLoadTask
+         if (entityLoad != null) {
+             entityLoad.setPriority(priority);
+         }
+ 
+-        final PoiDataLoadTask poiLoad = this.chunkHolder.getPoiDataLoadTask();
++        final IPoiDataLoadTask poiLoad = this.chunkHolder.getPoiDataLoadTask(); // IWM - IPoiDataLoadTask
+ 
+         if (poiLoad != null) {
+             poiLoad.setPriority(priority);
+@@ -206,12 +206,12 @@ public final class ChunkLoadTask extends ChunkProgressionTask {
+ 
+     @Override
+     public void raisePriority(final PrioritisedExecutor.Priority priority) {
+-        final EntityDataLoadTask entityLoad = this.chunkHolder.getEntityDataLoadTask();
++        final IEntityDataLoadTask entityLoad = this.chunkHolder.getEntityDataLoadTask(); // IWM - IEntityDataLoadTask
+         if (entityLoad != null) {
+             entityLoad.raisePriority(priority);
+         }
+ 
+-        final PoiDataLoadTask poiLoad = this.chunkHolder.getPoiDataLoadTask();
++        final IPoiDataLoadTask poiLoad = this.chunkHolder.getPoiDataLoadTask(); // IWM - IPoiDataLoadTask
+ 
+         if (poiLoad != null) {
+             poiLoad.raisePriority(priority);
+@@ -274,7 +274,12 @@ public final class ChunkLoadTask extends ChunkProgressionTask {
+         }
+     }
+ 
+-    public static final class ChunkDataLoadTask extends CallbackDataLoadTask<ChunkAccess, ChunkAccess> {
++    // IWM Start - Add IChunkDataLoadTask
++    public interface IChunkDataLoadTask extends ILoadTask<ChunkAccess, ChunkAccess> {}
++
++    public static final class ChunkDataLoadTask extends CallbackDataLoadTask<ChunkAccess, ChunkAccess> implements IChunkDataLoadTask {
++    // IWM End
++
+         protected ChunkDataLoadTask(final ChunkTaskScheduler scheduler, final ServerLevel world, final int chunkX,
+                                     final int chunkZ, final PrioritisedExecutor.Priority priority) {
+             super(scheduler, world, chunkX, chunkZ, RegionFileIOThread.RegionFileType.CHUNK_DATA, priority);
+@@ -354,7 +359,12 @@ public final class ChunkLoadTask extends ChunkProgressionTask {
+         }
+     }
+ 
+-    public static final class PoiDataLoadTask extends CallbackDataLoadTask<PoiChunk, PoiChunk> {
++    // IWM Start - Add IPoiDataLoadTask
++    public interface IPoiDataLoadTask extends ILoadTask<PoiChunk, PoiChunk> {}
++
++    public static final class PoiDataLoadTask extends CallbackDataLoadTask<PoiChunk, PoiChunk> implements IPoiDataLoadTask {
++    // IWM End
++
+         public PoiDataLoadTask(final ChunkTaskScheduler scheduler, final ServerLevel world, final int chunkX,
+                                final int chunkZ, final PrioritisedExecutor.Priority priority) {
+             super(scheduler, world, chunkX, chunkZ, RegionFileIOThread.RegionFileType.POI_DATA, priority);
+@@ -421,7 +431,11 @@ public final class ChunkLoadTask extends ChunkProgressionTask {
+         }
+     }
+ 
+-    public static final class EntityDataLoadTask extends CallbackDataLoadTask<CompoundTag, CompoundTag> {
++    // IWM Start - Add IEntityDataLoadTask
++    public interface IEntityDataLoadTask extends ILoadTask<CompoundTag, CompoundTag> {}
++
++    public static final class EntityDataLoadTask extends CallbackDataLoadTask<CompoundTag, CompoundTag> implements IEntityDataLoadTask {
++    // IWM End
+ 
+         public EntityDataLoadTask(final ChunkTaskScheduler scheduler, final ServerLevel world, final int chunkX,
+                                   final int chunkZ, final PrioritisedExecutor.Priority priority) {
+diff --git a/src/main/java/io/papermc/paper/chunk/system/scheduling/ILoadTask.java b/src/main/java/io/papermc/paper/chunk/system/scheduling/ILoadTask.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..738e8fe2866673a8c9107f6b665fd2cb0bf40c0d
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/chunk/system/scheduling/ILoadTask.java
+@@ -0,0 +1,27 @@
++package io.papermc.paper.chunk.system.scheduling;
++
++import ca.spottedleaf.concurrentutil.executor.standard.PrioritisedExecutor;
++import org.jetbrains.annotations.Contract;
++
++import java.util.function.Consumer;
++
++public interface ILoadTask<OnMain, FinalCompletion> {
++
++    PrioritisedExecutor.Priority getPriority();
++
++    void lowerPriority(PrioritisedExecutor.Priority priority);
++
++    void setPriority(PrioritisedExecutor.Priority priority);
++
++    void raisePriority(PrioritisedExecutor.Priority priority);
++
++    @Contract("_ -> param1")
++    boolean schedule(final boolean delay);
++
++    void scheduleNow();
++
++    boolean cancel();
++
++    void addCallback(final Consumer<GenericDataLoadTask.TaskResult<FinalCompletion, Throwable>> consumer);
++
++}
+diff --git a/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java b/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java
+index 96f61b93e22acf10aa4c4bf3cb5102011a8dd694..a37d4d5d1c140c8f5b89e416a2f98647716d03a2 100644
+--- a/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java
++++ b/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java
+@@ -13,6 +13,7 @@ import com.google.gson.JsonPrimitive;
+ import com.infernalsuite.iwm.api.IWMProvider;
+ import com.infernalsuite.iwm.api.InfernalWorldManager;
+ import com.infernalsuite.iwm.api.formats.FormatRegistry;
++import com.infernalsuite.iwm.level.IWMChunkLoadTask;
+ import com.infernalsuite.iwm.level.InfernalLevel;
+ import com.mojang.logging.LogUtils;
+ import io.papermc.paper.chunk.system.io.RegionFileIOThread;
+@@ -132,12 +133,12 @@ public final class NewChunkHolder {
+     // been read from disk
+     private static final CompoundTag EMPTY_ENTITY_CHUNK = new CompoundTag();
+ 
+-    private ChunkLoadTask.EntityDataLoadTask entityDataLoadTask;
++    private ChunkLoadTask.IEntityDataLoadTask entityDataLoadTask; // IWM - IEntityDataLoadTask
+     // note: if entityDataLoadTask is cancelled, but on its completion entityDataLoadTaskWaiters.size() != 0,
+     // then the task is rescheduled
+     private List<GenericDataLoadTaskCallback> entityDataLoadTaskWaiters;
+ 
+-    public ChunkLoadTask.EntityDataLoadTask getEntityDataLoadTask() {
++    public ChunkLoadTask.IEntityDataLoadTask getEntityDataLoadTask() { // IWM - IEntityDataLoadTask
+         return this.entityDataLoadTask;
+     }
+ 
+@@ -151,7 +152,7 @@ public final class NewChunkHolder {
+ 
+     private void completeEntityLoad(final GenericDataLoadTask.TaskResult<CompoundTag, Throwable> result) {
+         final List<GenericDataLoadTaskCallback> completeWaiters;
+-        ChunkLoadTask.EntityDataLoadTask entityDataLoadTask = null;
++        ChunkLoadTask.IEntityDataLoadTask entityDataLoadTask = null; // IWM - IEntityDataLoadTask
+         boolean scheduleEntityTask = false;
+         ReentrantAreaLock.Node schedulingLock = this.scheduler.schedulingLockArea.lock(this.chunkX, this.chunkZ);
+         try {
+@@ -178,9 +179,17 @@ public final class NewChunkHolder {
+                     this.entityDataLoadTaskWaiters = null;
+                     // no tasks to schedule _for_
+                 } else {
+-                    entityDataLoadTask = this.entityDataLoadTask = new ChunkLoadTask.EntityDataLoadTask(
+-                        this.scheduler, this.world, this.chunkX, this.chunkZ, this.getEffectivePriority()
+-                    );
++                    // IWM Start - Hook in our custom entity data load task
++                    if (this.world instanceof InfernalLevel level) {
++                        entityDataLoadTask = this.entityDataLoadTask = new IWMChunkLoadTask.EntityDataLoadTask(
++                                this.scheduler, level, this.chunkX, this.chunkZ, this.getEffectivePriority()
++                        );
++                    } else {
++                        entityDataLoadTask = this.entityDataLoadTask = new ChunkLoadTask.EntityDataLoadTask(
++                                this.scheduler, this.world, this.chunkX, this.chunkZ, this.getEffectivePriority()
++                        );
++                    }
++                    // IWM End
+                     entityDataLoadTask.addCallback(this::completeEntityLoad);
+                     // need one schedule() per waiter
+                     for (final GenericDataLoadTaskCallback callback : waiters) {
+@@ -225,9 +234,17 @@ public final class NewChunkHolder {
+         final GenericDataLoadTaskCallback ret = new EntityDataLoadTaskCallback((Consumer)consumer, this);
+ 
+         if (this.entityDataLoadTask == null) {
+-            this.entityDataLoadTask = new ChunkLoadTask.EntityDataLoadTask(
+-                this.scheduler, this.world, this.chunkX, this.chunkZ, this.getEffectivePriority()
+-            );
++            // IWM Start - Hook in our custom entity data load task
++            if (this.world instanceof InfernalLevel level) {
++                this.entityDataLoadTask = new IWMChunkLoadTask.EntityDataLoadTask(
++                        this.scheduler, level, this.chunkX, this.chunkZ, this.getEffectivePriority()
++                );
++            } else {
++                this.entityDataLoadTask = new ChunkLoadTask.EntityDataLoadTask(
++                        this.scheduler, this.world, this.chunkX, this.chunkZ, this.getEffectivePriority()
++                );
++            }
++            // IWM End
+             this.entityDataLoadTask.addCallback(this::completeEntityLoad);
+             this.entityDataLoadTaskWaiters = new ArrayList<>();
+         }
+@@ -255,12 +272,12 @@ public final class NewChunkHolder {
+ 
+     private PoiChunk poiChunk;
+ 
+-    private ChunkLoadTask.PoiDataLoadTask poiDataLoadTask;
++    private ChunkLoadTask.IPoiDataLoadTask poiDataLoadTask; // IWM - IPoiDataLoadTask
+     // note: if entityDataLoadTask is cancelled, but on its completion entityDataLoadTaskWaiters.size() != 0,
+     // then the task is rescheduled
+     private List<GenericDataLoadTaskCallback> poiDataLoadTaskWaiters;
+ 
+-    public ChunkLoadTask.PoiDataLoadTask getPoiDataLoadTask() {
++    public ChunkLoadTask.IPoiDataLoadTask getPoiDataLoadTask() { // IWM - IPoiDataLoadTask
+         return this.poiDataLoadTask;
+     }
+ 
+@@ -272,7 +289,7 @@ public final class NewChunkHolder {
+ 
+     private void completePoiLoad(final GenericDataLoadTask.TaskResult<PoiChunk, Throwable> result) {
+         final List<GenericDataLoadTaskCallback> completeWaiters;
+-        ChunkLoadTask.PoiDataLoadTask poiDataLoadTask = null;
++        ChunkLoadTask.IPoiDataLoadTask poiDataLoadTask = null; // IWM - IPoiDataLoadTask
+         boolean schedulePoiTask = false;
+         ReentrantAreaLock.Node schedulingLock = this.scheduler.schedulingLockArea.lock(this.chunkX, this.chunkZ);
+         try {
+@@ -299,9 +316,17 @@ public final class NewChunkHolder {
+                     this.poiDataLoadTaskWaiters = null;
+                     // no tasks to schedule _for_
+                 } else {
+-                    poiDataLoadTask = this.poiDataLoadTask = new ChunkLoadTask.PoiDataLoadTask(
+-                        this.scheduler, this.world, this.chunkX, this.chunkZ, this.getEffectivePriority()
+-                    );
++                    // IWM Start - Hook in our custom poi data load task
++                    if (this.world instanceof InfernalLevel level) {
++                        poiDataLoadTask = this.poiDataLoadTask = new IWMChunkLoadTask.PoiDataLoadTask(
++                                this.scheduler, level, this.chunkX, this.chunkZ, this.getEffectivePriority()
++                        );
++                    } else {
++                        poiDataLoadTask = this.poiDataLoadTask = new ChunkLoadTask.PoiDataLoadTask(
++                                this.scheduler, this.world, this.chunkX, this.chunkZ, this.getEffectivePriority()
++                        );
++                    }
++                    // IWM End
+                     poiDataLoadTask.addCallback(this::completePoiLoad);
+                     // need one schedule() per waiter
+                     for (final GenericDataLoadTaskCallback callback : waiters) {
+@@ -345,9 +370,17 @@ public final class NewChunkHolder {
+         final GenericDataLoadTaskCallback ret = new PoiDataLoadTaskCallback((Consumer)consumer, this);
+ 
+         if (this.poiDataLoadTask == null) {
+-            this.poiDataLoadTask = new ChunkLoadTask.PoiDataLoadTask(
+-                this.scheduler, this.world, this.chunkX, this.chunkZ, this.getEffectivePriority()
+-            );
++            // IWM Start - Hook in our custom poi data load task
++            if (this.world instanceof InfernalLevel level) {
++                this.poiDataLoadTask = new IWMChunkLoadTask.PoiDataLoadTask(
++                        this.scheduler, level, this.chunkX, this.chunkZ, this.getEffectivePriority()
++                );
++            } else {
++                this.poiDataLoadTask = new ChunkLoadTask.PoiDataLoadTask(
++                        this.scheduler, this.world, this.chunkX, this.chunkZ, this.getEffectivePriority()
++                );
++            }
++            // IWM End
+             this.poiDataLoadTask.addCallback(this::completePoiLoad);
+             this.poiDataLoadTaskWaiters = new ArrayList<>();
+         }
+@@ -378,7 +411,7 @@ public final class NewChunkHolder {
+         protected final Consumer<GenericDataLoadTask.TaskResult<?, Throwable>> consumer;
+         protected final NewChunkHolder chunkHolder;
+         protected boolean completed;
+-        protected GenericDataLoadTask<?, ?> schedule;
++        protected ILoadTask<?, ?> schedule; // IWM - ILoadTask
+         protected final AtomicBoolean scheduled = new AtomicBoolean();
+ 
+         public GenericDataLoadTaskCallback(final Consumer<GenericDataLoadTask.TaskResult<?, Throwable>> consumer,
